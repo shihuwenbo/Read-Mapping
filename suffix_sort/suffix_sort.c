@@ -9,11 +9,11 @@ int alpha_rank(char l)
     // rank alphabetically $<a<c<g<t
     switch(l)
     {
-        case '$': return 0;
-        case 'a': return 1;
+        case '$': return 4;
+        case 'a': return 0;
+        case 'b': return 1;
         case 'c': return 2;
-        case 'g': return 3;
-        case 't': return 4;
+        case 't': return 3;
     }
     return -1;
 }
@@ -61,26 +61,63 @@ int* suffix_sorting_2(char* str, int len)
 
 /* inductive stages: sort pos incrementally in n*log(n) time */
 
-    for(int H = 2; H < len; H <<= 1)
+    for(int H = 1; H < len; H <<= 1)
     {
-        // reset prm such that prm[i] points to the left most bucket
-        int least[ALPHA_SIZE + 1];
+
+/* reset prm such that prm[i] points to the left most bucket */
+
+        // count how many elements in each bin
+        int bin_size[ALPHA_SIZE + 1];
+        bin_size[0] = 1;
+        for(int i = 1; i < ALPHA_SIZE + 1; i++)
+            bin_size[i] = 0;
+        for(int i = 1, j = 0; i < len; i++)
+        {
+            if(bh[i] == 1)
+                j++;
+            bin_size[j]++;
+        }
+
+        // compute offset
+        int bin_offset[ALPHA_SIZE + 1];
+        bin_offset[0] = 0;
+        for(int i = 1; i < ALPHA_SIZE+1; i++)
+            bin_offset[i] = bin_offset[i-1] + bin_size[i-1];
+
+        // find the left most position of each bin
+        int left_most[ALPHA_SIZE + 1];
         for(int i = 0; i < ALPHA_SIZE + 1; i++)
-            least[i] = 2147483647u;
+            left_most[i] = 2147483647u;
         for(int i = 0; i < len; i++)
         {
-            if(prm[i] < least[alpha_rank(str[i])])
-                least[alpha_rank(str[i])] = prm[i];
+            int j;
+            for(j = 0; prm[i] >= bin_offset[j] && j < ALPHA_SIZE+1; j++)
+                continue;
+            j--;
+            if(prm[i] < left_most[j])
+                left_most[j] = prm[i];
         }
+
+        // set prm[i] to point to the left most in each bin
         for(int i = 0; i < len; i++)
-            prm[i] = least[alpha_rank(str[i])];
+        {
+            int j;
+            for(j = 0; prm[i] >= bin_offset[j] && j < ALPHA_SIZE+1; j++)
+                continue;
+            j--;
+            prm[i] = left_most[j];
+        }
 
         // initialize count
         for(int i = 0; i < len; i++)
             count[i] = 0;
 
+        // initialize b2h
+        for(int i = 0; i < len; i++)
+            b2h[i] = 0;
+
         // scan bucket
-        int l = 0, r = 0;
+        int l = 0, r = 0, n = 0;
         while(l < len)
         {
             // find left and right boundary of a bucket
@@ -95,10 +132,6 @@ int* suffix_sorting_2(char* str, int len)
             if(r >= len)
                 r = r - 1;
 
-            // initialize b2h
-            for(int i = 0; i < len; i++)
-                b2h[i] = 0;
-
             // increment count, set prm, set b2h
             for(int i = l; i <= r; i++)
             {
@@ -111,41 +144,47 @@ int* suffix_sorting_2(char* str, int len)
                 }
             }
 
-            for(int i = 0; i < len; i++)
-                printf("%d ", prm[i]);
-            printf("\n");
             // update b2h
-            for(int i = 0; i < ALPHA_SIZE + 1; i++)
-                least[i] = 2147483647u;
-            for(int i = 0; i < len; i++)
+            for(int i = 0; i < 5; i++)
             {
-                if(prm[i] < least[alpha_rank(str[i])])
-                    least[alpha_rank(str[i])] = prm[i];
-            }
-            for(int i = 0; i < len; i++)
-            {
-                int find = 0;
-                for(int j = 0; j < ALPHA_SIZE + 1; j++)
+                if(b2h[i] == 1)
                 {
-                    if(least[j] == i)
+                    if(n == 2)
+                    printf("prm[%d] %d\n",i, prm[i]);
+                    int j;
+                    for(j = prm[i] + 1; j < len; j++)
                     {
-                        find = 1;
-                        break;
+                        if(bh[j] == 1 || b2h[j] == 0)
+                            break;
+                    }
+                    for(int k = prm[i] + 1; k < j; k++)
+                    {
+                        if(n == 2)
+                            printf("setting %d to 0\n", k);
+                        b2h[k] = 0;
                     }
                 }
-                if(find == 1)
-                    b2h[i] = 1;
-                else
-                    b2h[i] = 0;
+            }
+
+            if(n == 2)
+            {
+                            for(int i = 0; i < len; i++)
+        printf("%d %d %d %d %d\n",bh[i],b2h[i], count[i], prm[i],pos[i]);
+    return pos;
+
             }
 
             // update left side boundary
             l = r + 1;
+
+            n++;
         }
-        
-        // update pos and set bh
+
+        // update pos
         for(int i = 0; i < len; i++)
             pos[prm[i]] = i;
+
+        // copy b2h to bh
         for(int i = 0; i < len; i++)
             bh[i] = b2h[i];
     }
