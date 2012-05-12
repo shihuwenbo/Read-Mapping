@@ -9,11 +9,11 @@ int alpha_rank(char l)
     // rank alphabetically $<a<c<g<t
     switch(l)
     {
-        case '$': return 4;
-        case 'a': return 0;
-        case 'b': return 1;
+        case '$': return 0;
+        case 'a': return 1;
         case 'c': return 2;
-        case 't': return 3;
+        case 'g': return 3;
+        case 't': return 4;
     }
     return -1;
 }
@@ -66,10 +66,18 @@ int* suffix_sorting_2(char* str, int len)
 
 /* reset prm such that prm[i] points to the left most bucket */
 
+        // find how many bins
+        int num_bin = 0;
+        for(int i = 0; i < len; i++)
+        {
+            if(bh[i] == 1)
+                num_bin++;
+        }
+
         // count how many elements in each bin
-        int bin_size[ALPHA_SIZE + 1];
+        int* bin_size = (int*) malloc(num_bin*sizeof(int));
         bin_size[0] = 1;
-        for(int i = 1; i < ALPHA_SIZE + 1; i++)
+        for(int i = 1; i < num_bin; i++)
             bin_size[i] = 0;
         for(int i = 1, j = 0; i < len; i++)
         {
@@ -79,19 +87,19 @@ int* suffix_sorting_2(char* str, int len)
         }
 
         // compute offset
-        int bin_offset[ALPHA_SIZE + 1];
+        int* bin_offset = (int*) malloc(num_bin*sizeof(int));
         bin_offset[0] = 0;
-        for(int i = 1; i < ALPHA_SIZE+1; i++)
+        for(int i = 1; i < num_bin; i++)
             bin_offset[i] = bin_offset[i-1] + bin_size[i-1];
 
         // find the left most position of each bin
-        int left_most[ALPHA_SIZE + 1];
-        for(int i = 0; i < ALPHA_SIZE + 1; i++)
+        int* left_most = (int*) malloc(num_bin*sizeof(int));
+        for(int i = 0; i < num_bin; i++)
             left_most[i] = 2147483647u;
         for(int i = 0; i < len; i++)
         {
             int j;
-            for(j = 0; prm[i] >= bin_offset[j] && j < ALPHA_SIZE+1; j++)
+            for(j = 0; prm[i] >= bin_offset[j] && j < num_bin; j++)
                 continue;
             j--;
             if(prm[i] < left_most[j])
@@ -102,7 +110,7 @@ int* suffix_sorting_2(char* str, int len)
         for(int i = 0; i < len; i++)
         {
             int j;
-            for(j = 0; prm[i] >= bin_offset[j] && j < ALPHA_SIZE+1; j++)
+            for(j = 0; prm[i] >= bin_offset[j] && j < num_bin; j++)
                 continue;
             j--;
             prm[i] = left_most[j];
@@ -145,38 +153,25 @@ int* suffix_sorting_2(char* str, int len)
             }
 
             // update b2h
-            for(int i = 0; i < 5; i++)
+            b2h[0] = 1;
+            for(int i = l; i <= r; i++)
             {
-                if(b2h[i] == 1)
+                int Ti = pos[i] - H;
+                if(Ti >= 0)
                 {
-                    if(n == 2)
-                    printf("prm[%d] %d\n",i, prm[i]);
-                    int j;
-                    for(j = prm[i] + 1; j < len; j++)
+                    if(b2h[prm[Ti]] == 1)
                     {
-                        if(bh[j] == 1 || b2h[j] == 0)
-                            break;
-                    }
-                    for(int k = prm[i] + 1; k < j; k++)
-                    {
-                        if(n == 2)
-                            printf("setting %d to 0\n", k);
-                        b2h[k] = 0;
+                        int j;
+                        for(j = prm[Ti] + 1; bh[j]==0 && b2h[j]==1; j++)
+                            continue;
+                        for(int k = prm[Ti] + 1; k < j; k++)
+                            b2h[k] = 0;
                     }
                 }
             }
 
-            if(n == 2)
-            {
-                            for(int i = 0; i < len; i++)
-        printf("%d %d %d %d %d\n",bh[i],b2h[i], count[i], prm[i],pos[i]);
-    return pos;
-
-            }
-
             // update left side boundary
             l = r + 1;
-
             n++;
         }
 
