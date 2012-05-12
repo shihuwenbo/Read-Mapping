@@ -59,10 +59,18 @@ int* suffix_sorting_2(char* str, int len)
     for(int i = 1; i < len; i++)
         bh[i] = str[pos[i]] != str[pos[i-1]] ? 1 : 0;
 
+    /* debug
+    for(int i = 0; i < len; i++)
+        printf("%d %d %d\n",bh[i], prm[i], pos[i]);
+    return NULL;
+    */
+
 /* inductive stages: sort pos incrementally in n*log(n) time */
 
-    for(int H = 1; H < len; H <<= 1)
+    for(int H = 1; H < len / 2; H <<= 1)
     {
+
+        printf("H = %d\n", H);
 
 /* reset prm such that prm[i] points to the left most bucket */
 
@@ -116,6 +124,20 @@ int* suffix_sorting_2(char* str, int len)
             prm[i] = left_most[j];
         }
 
+        printf("prm: ");
+        for(int i = 0; i < len; i++)
+            printf("%d ", prm[i]);
+        printf("\n");
+        printf("pos: ");
+        for(int i = 0; i < len; i++)
+            printf("%d ", pos[i]);
+        printf("\n");
+        printf("bh: ");
+        for(int i = 0; i < len; i++)
+            printf("%d ", bh[i]);
+        printf("\n");
+
+
         // initialize count
         for(int i = 0; i < len; i++)
             count[i] = 0;
@@ -139,6 +161,7 @@ int* suffix_sorting_2(char* str, int len)
             }
             if(r >= len)
                 r = r - 1;
+            // printf("l: %d, r: %d\n", l, r);
 
             // increment count, set prm, set b2h
             for(int i = l; i <= r; i++)
@@ -147,13 +170,13 @@ int* suffix_sorting_2(char* str, int len)
                 if(Ti >= 0)
                 {
                     count[prm[Ti]]++;
-                    prm[Ti] = prm[Ti] + count[prm[Ti]] - 1;
+                    prm[Ti] += count[prm[Ti]] - 1;
                     b2h[prm[Ti]] = 1;
+                    // printf("setting b2h[%d] to 1\n", prm[Ti]);
                 }
             }
 
             // update b2h
-            b2h[0] = 1;
             for(int i = l; i <= r; i++)
             {
                 int Ti = pos[i] - H;
@@ -165,7 +188,10 @@ int* suffix_sorting_2(char* str, int len)
                         for(j = prm[Ti] + 1; bh[j]==0 && b2h[j]==1; j++)
                             continue;
                         for(int k = prm[Ti] + 1; k < j; k++)
+                        {
+                            // printf("setting b2h[%d] to 0\n", k);
                             b2h[k] = 0;
+                        }
                     }
                 }
             }
@@ -182,6 +208,9 @@ int* suffix_sorting_2(char* str, int len)
         // copy b2h to bh
         for(int i = 0; i < len; i++)
             bh[i] = b2h[i];
+        bh[0] = 1;
+
+        printf("\n");
     }
 
 /* free dynamically allocated memory */

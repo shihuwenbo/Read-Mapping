@@ -6,6 +6,7 @@ int main(int argc, char* argv[])
 {
     char test[] = "acaacg$";
     int* sa = suffix_sorting_2(test, strlen(test));
+    printf("Suffix Array: ");
     for(int i = 0; i < strlen(test); i++)
         printf("%d ", sa[i]);
     printf("\n");
