@@ -3,21 +3,7 @@
 #include <string.h>
 #include <stdio.h>
 
-// helper function, given a letter, return its rank in the alphabet
-int alpha_rank(char l)
-{
-    // rank alphabetically $<a<c<g<t
-    switch(l)
-    {
-        case '$': return 0;
-        case 'a': return 1;
-        case 'c': return 2;
-        case 'g': return 3;
-        case 't': return 4;
-    }
-    return -1;
-}
-
+/*---------------------------------------------------------------------------*/
 // struct for naive suffix sort algorithm
 typedef struct str_int
 {
@@ -57,11 +43,27 @@ int* ss_naive(char* str, int len)
     return sa;
 }
 
+/*---------------------------------------------------------------------------*/
+// helper function, given a letter, return its rank in the alphabet
+int alpha_rank(char l)
+{
+    // rank alphabetically $<a<c<g<t
+    switch(l)
+    {
+        case '$': return 0;
+        case 'a': return 1;
+        case 'c': return 2;
+        case 'g': return 3;
+        case 't': return 4;
+    }
+    return -1;
+}
+
 // refined version of ss_mm
 int* ss_mm(char* str, int len)
 {
 
-/* allocating memory for arrays required for sorting */
+    /* allocating memory for arrays required for sorting */
 
     int* pos = (int*) malloc(len * sizeof(int));
     int* prm = (int*) malloc(len * sizeof(int));
@@ -71,7 +73,7 @@ int* ss_mm(char* str, int len)
     char* b2h = (char*) malloc(bit_vect_sz * sizeof(char));
 
 
-/* first stage: radix sorting according to the first letter */
+    /* first stage: radix sorting according to the first letter */
 
     // initialize the bin for counting sort
     int bin[ALPHA_SIZE + 1];
@@ -106,14 +108,14 @@ int* ss_mm(char* str, int len)
             clear_bit(bh, i);
     }
 
-/* inductive stages: sort pos incrementally in n*log(n) time */
+    /* inductive stages: sort pos incrementally in n*log(n) time */
 
     for(int H = 1; H < len; H <<= 1)
     {
 
-        printf("=====================H: %d ====================\n", H);
+        // printf("=====================H: %d ====================\n", H);
 
-/* reset prm such that prm[i] points to the left most bucket */
+    /* reset prm such that prm[i] points to the left most bucket */
 
         // find how many bins
         int num_bin = 0;
@@ -155,6 +157,7 @@ int* ss_mm(char* str, int len)
                 clear_bit(b2h, i);
         }
 
+        /*
         // print out information for debug
         printf("********************BEFORE********************\n");
         printf("i\tbh\tbh2\tprm\tpos\n");
@@ -165,6 +168,7 @@ int* ss_mm(char* str, int len)
             if(i < len-1 && get_bit(bh,i+1) == 1)
                 printf("----------------------------------------------\n");
         }
+        */
 
         // scan bucket
         int l = 0, r = 0, n = 0;
@@ -228,6 +232,7 @@ int* ss_mm(char* str, int len)
         // free temp dynamically allocated memory
         free(left_most);
 
+        /*
         // print out information for debug
         printf("********************AFTER*********************\n");
         printf("i\tbh\tbh2\tprm\tpos\n");
@@ -238,20 +243,20 @@ int* ss_mm(char* str, int len)
             if(i < len-1 && get_bit(bh,i+1) == 1)
                 printf("----------------------------------------------\n");
         }
+        */
     }
 
-/* free dynamically allocated memory */
+    /* free dynamically allocated memory */
 
     free(prm);
     free(bh);
     free(b2h);
     free(count);
 
-/* return suffix array */
-
     return pos;
 }
 
+/*---------------------------------------------------------------------------*/
 // get the pos-th bit in the array bit_vector
 int get_bit(char* bit_vector, int pos)
 {
