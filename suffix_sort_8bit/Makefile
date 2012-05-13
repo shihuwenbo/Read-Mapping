@@ -14,6 +14,3 @@ suffix_sort.o: suffix_sort.c
 
 clean:
 	rm $(OBJECTS) $(BINARY)
-
-run: $(BINARY)
-	./$(BINARY)

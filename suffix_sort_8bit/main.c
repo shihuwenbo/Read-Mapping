@@ -1,28 +1,18 @@
 #include "suffix_sort.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 int main(int argc, char* argv[])
 {
-    // test case
-    char test[] = "atcg$";
-
     // suffix array by naive sort
-    int* sa0 = suffix_sorting_0(test, strlen(test));
-    printf("Suffix Array 0: ");
-    for(int i = 0; i < strlen(test); i++)
-        printf("%d ", sa0[i]);
-    printf("\n");
+    int* sa0 = ss_naive(argv[1], strlen(argv[1]));
 
     // suffix array by manber and myers algorithm
-    int* sa1 = suffix_sorting_1(test, strlen(test));
-    printf("Suffix Array 1: ");
-    for(int i = 0; i < strlen(test); i++)
-        printf("%d ", sa1[i]);
-    printf("\n");
+    int* sa1 = ss_mm_refined(argv[1], strlen(argv[1]));
 
     // verify result
-    for(int i = 0; i < strlen(test); i++)
+    for(int i = 0; i < strlen(argv[1]); i++)
     {
         if(sa0[i] != sa1[i])
         {
@@ -32,7 +22,7 @@ int main(int argc, char* argv[])
     }
 
     // Passed test
-    printf("Passed!!!\n");
+    printf("Passed :)\n");
 
     return 0;
 }
