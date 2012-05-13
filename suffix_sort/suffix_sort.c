@@ -106,13 +106,19 @@ int* suffix_sorting_1(char* str, int len)
 
 /* reset prm such that prm[i] points to the left most bucket */
 
-        // find how many bins
-        int num_bin = 0;
+        // find how many bins and zero
+        int num_bin = 0, num_zero = 0;
         for(int i = 0; i < len; i++)
         {
             if(bh[i] == 1)
                 num_bin++;
+            else
+                num_zero++;
         }
+
+        // break if the number of bins is less or equal to H
+        if(num_zero <= H)
+            break;
 
         // count how many elements in each bin
         int* bin_size = (int*) malloc(num_bin*sizeof(int));
