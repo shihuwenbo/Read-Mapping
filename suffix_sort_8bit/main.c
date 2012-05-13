@@ -9,7 +9,7 @@ int main(int argc, char* argv[])
     int* sa0 = ss_naive(argv[1], strlen(argv[1]));
 
     // suffix array by manber and myers algorithm
-    int* sa1 = ss_mm_refined(argv[1], strlen(argv[1]));
+    int* sa1 = ss_mm(argv[1], strlen(argv[1]));
 
     // verify result
     for(int i = 0; i < strlen(argv[1]); i++)
