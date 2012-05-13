@@ -18,8 +18,48 @@ int alpha_rank(char l)
     return -1;
 }
 
+// struct for naive suffix sort algorithm
+typedef struct str_int
+{
+    char* str;
+    int idx;
+}
+str_int_t;
+
+// comparator for qsort used in suffx sorting algorithm
+int suffix_compare(const void* lhs, const void* rhs)
+{
+    str_int_t* lhs_sit = (str_int_t*) lhs;
+    str_int_t* rhs_sit = (str_int_t*) rhs;
+    return strcmp(lhs_sit->str, rhs_sit->str);
+}
+
+// naive suffix sorting algorithm
+int* suffix_sorting_0(char* str, int len)
+{
+    // generate the suffixes
+    str_int_t* suffixes = (str_int_t*) malloc(len*sizeof(str_int_t));
+    for(int i = 0; i < len; i++)
+    {
+        suffixes[i].str = str++;
+        suffixes[i].idx = i;
+    }
+
+    // sort the suffixes
+    qsort(suffixes, len, sizeof(str_int_t), suffix_compare);
+
+    // generate the suffix array
+    int* sa = (int*) malloc(len*sizeof(int));
+    for(int i = 0; i < len; i++)
+        sa[i] = suffixes[i].idx;
+
+    // return the result
+    return sa;
+}
+
+
 // suffix sorting algorithm by manber and myers
-int* suffix_sorting_2(char* str, int len)
+int* suffix_sorting_1(char* str, int len)
 {
 /* allocating memory for arrays required for sorting */
 
@@ -59,18 +99,10 @@ int* suffix_sorting_2(char* str, int len)
     for(int i = 1; i < len; i++)
         bh[i] = str[pos[i]] != str[pos[i-1]] ? 1 : 0;
 
-    /* debug
-    for(int i = 0; i < len; i++)
-        printf("%d %d %d\n",bh[i], prm[i], pos[i]);
-    return NULL;
-    */
-
 /* inductive stages: sort pos incrementally in n*log(n) time */
 
-    for(int H = 1; H < len / 2; H <<= 1)
+    for(int H = 1; H < len; H <<= 1)
     {
-
-        printf("H = %d\n", H);
 
 /* reset prm such that prm[i] points to the left most bucket */
 
@@ -123,20 +155,6 @@ int* suffix_sorting_2(char* str, int len)
             j--;
             prm[i] = left_most[j];
         }
-
-        printf("prm: ");
-        for(int i = 0; i < len; i++)
-            printf("%d ", prm[i]);
-        printf("\n");
-        printf("pos: ");
-        for(int i = 0; i < len; i++)
-            printf("%d ", pos[i]);
-        printf("\n");
-        printf("bh: ");
-        for(int i = 0; i < len; i++)
-            printf("%d ", bh[i]);
-        printf("\n");
-
 
         // initialize count
         for(int i = 0; i < len; i++)
@@ -210,7 +228,10 @@ int* suffix_sorting_2(char* str, int len)
             bh[i] = b2h[i];
         bh[0] = 1;
 
-        printf("\n");
+        // free temp dynamically allocated memory
+        free(bin_size);
+        free(bin_offset);
+        free(left_most);
     }
 
 /* free dynamically allocated memory */
