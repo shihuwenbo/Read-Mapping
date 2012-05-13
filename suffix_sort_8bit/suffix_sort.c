@@ -72,13 +72,15 @@ int* ss_mm(char* str, int len)
     char* bh = (char*) malloc(bit_vect_sz * sizeof(char));
     char* b2h = (char*) malloc(bit_vect_sz * sizeof(char));
 
+    /* initialize boolean bit vectors */
+    memset(bh, 0, bit_vect_sz*sizeof(char));
+    memset(bh, 0, bit_vect_sz*sizeof(char));
 
     /* first stage: radix sorting according to the first letter */
 
     // initialize the bin for counting sort
     int bin[ALPHA_SIZE + 1];
-    for(int i = 0; i < ALPHA_SIZE + 1; i++)
-        bin[i] = 0;
+    memset(bin, 0, (ALPHA_SIZE+1)*sizeof(int));
 
     // count the number of each letter
     for(int i = 0; i < len; i++)
@@ -104,8 +106,6 @@ int* ss_mm(char* str, int len)
     {
         if(str[pos[i]] != str[pos[i-1]])
             set_bit(bh, i);
-        else
-            clear_bit(bh, i);
     }
 
     /* inductive stages: sort pos incrementally in n*log(n) time */
@@ -125,13 +125,16 @@ int* ss_mm(char* str, int len)
                 num_bin++;
         }
 
+        // done if all the suffixes live in separate bins
+        if(num_bin == len)
+            break;
+
         // find the left most position of each bin
-        int* left_most = (int*) malloc(num_bin*sizeof(int));
         for(int i = 0, j = 0; i < len; i++)
         {
             if(get_bit(bh, i) == 1)
             {
-                left_most[j] = i;
+                count[j] = i;
                 j++;
             }
         }
@@ -141,21 +144,15 @@ int* ss_mm(char* str, int len)
         {
             if(get_bit(bh, i) == 1)
                 j++;
-            prm[pos[i]] = left_most[j];
+            prm[pos[i]] = count[j];
         }
 
         // initialize count
-        for(int i = 0; i < len; i++)
-            count[i] = 0;
+        memset(count, 0, len*sizeof(int));
 
         // initialize b2h
-        for(int i = 0; i < len; i++)
-        {
-            if(get_bit(bh, i) == 1)
-                set_bit(b2h, i);
-            else
-                clear_bit(b2h, i);
-        }
+        for(int i = 0; i < bit_vect_sz; i++)
+            b2h[i] = bh[i];
 
         /*
         // print out information for debug
@@ -221,16 +218,12 @@ int* ss_mm(char* str, int len)
             n++;
         }
 
-        // update pos
+        // update pos and bh
         for(int i = 0; i < len; i++)
             pos[prm[i]] = i;
 
-        // copy b2h to bh
         for(int i = 0; i < bit_vect_sz; i++)
             bh[i] = b2h[i];
-
-        // free temp dynamically allocated memory
-        free(left_most);
 
         /*
         // print out information for debug
