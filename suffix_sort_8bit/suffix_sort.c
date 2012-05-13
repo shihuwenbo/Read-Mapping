@@ -57,193 +57,8 @@ int* ss_naive(char* str, int len)
     return sa;
 }
 
-
-// suffix sorting algorithm by manber and myers
-int* ss_mm(char* str, int len)
-{
-
-/* allocating memory for arrays required for sorting */
-
-    int* pos = (int*) malloc(len * sizeof(int));
-    int* prm = (int*) malloc(len * sizeof(int));
-    int* bh = (int*) malloc(len * sizeof(int));
-    int* b2h = (int*) malloc(len * sizeof(int));
-    int* count = (int*) malloc(len * sizeof(int));
-
-/* first stage: radix sorting according to the first letter */
-
-    // initialize the bin for counting sort
-    int bin[ALPHA_SIZE + 1];
-    for(int i = 0; i < ALPHA_SIZE + 1; i++)
-        bin[i] = 0;
-
-    // count the number of each letter
-    for(int i = 0; i < len; i++)
-        bin[alpha_rank(str[i])]++;
-
-    // compute offset of each letter
-    int offset[ALPHA_SIZE + 1];
-    offset[0] = 0;
-    for(int i = 1; i < ALPHA_SIZE + 1; i++)
-        offset[i] = offset[i-1] + bin[i-1];
-
-    // use the offset to compute the first stage suffix array
-    for(int i = 0; i < len; i++)
-        pos[offset[alpha_rank(str[i])]++] = i;
-
-    // compute the first stage prm
-    for(int i = 0; i < len; i++)
-        prm[pos[i]] = i;
-
-    // compute the first stage bh
-    bh[0] = 1;
-    for(int i = 1; i < len; i++)
-        bh[i] = str[pos[i]] != str[pos[i-1]] ? 1 : 0;
-
-/* inductive stages: sort pos incrementally in n*log(n) time */
-
-    for(int H = 1; H < len; H <<= 1)
-    {
-
-        printf("=====================H: %d ====================\n", H);
-
-/* reset prm such that prm[i] points to the left most bucket */
-
-        // find how many bins and zero
-        int num_bin = 0;
-        for(int i = 0; i < len; i++)
-        {
-            if(bh[i] == 1)
-                num_bin++;
-        }
-
-        // find the left most position of each bin
-        int* left_most = (int*) malloc(num_bin*sizeof(int));
-        for(int i = 0, j = 0; i < len; i++)
-        {
-            if(bh[i] == 1)
-            {
-                left_most[j] = i;
-                j++;
-            }
-        }
-
-        // set prm[i] to point to the left most in each bin
-        for(int i = 0, j = -1; i < len; i++)
-        {
-            if(bh[i] == 1)
-                j++;
-            prm[pos[i]] = left_most[j];
-        }
-        
-        // initialize count
-        for(int i = 0; i < len; i++)
-            count[i] = 0;
-
-        // initialize b2h
-        for(int i = 0; i < len; i++)
-            b2h[i] = bh[i];
-
-        // print out information for debug
-        printf("********************BEFORE********************\n");
-        printf("i\tbh\tbh2\tprm\tpos\n");
-        for(int i = 0; i < len; i++)
-        {
-            printf("%d\t%d\t%d\t%d\t%d = %s\n",
-                    i,bh[i],b2h[i],prm[i],pos[i],str+pos[i]);
-            if(i < len-1 && bh[i+1] == 1)
-                printf("----------------------------------------------\n");
-        }
-
-        // scan bucket
-        int l = 0, r = 0, n = 0;
-        while(l < len)
-        {
-            // find left and right boundary of a bucket
-            for(r = l + 1; r < len; r++)
-            {
-                if(bh[r] == 1)
-                {
-                    r = r -1;
-                    break;
-                }
-            }
-            if(r >= len)
-                r = r - 1;
-            // printf("l: %d, r: %d\n", l, r);
-
-            // increment count, set prm, set b2h
-            for(int i = l; i <= r; i++)
-            {
-                int Ti = pos[i] - H;
-                if(Ti >= 0)
-                {
-                    count[prm[Ti]]++;
-                    prm[Ti] += count[prm[Ti]] - 1;
-                    b2h[prm[Ti]] = 1;
-                    // printf("setting b2h[%d] to 1\n", prm[Ti]);
-                }
-            }
-
-            // update b2h
-            for(int i = l; i <= r; i++)
-            {
-                int Ti = pos[i] - H;
-                if(Ti >= 0)
-                {
-                    if(b2h[prm[Ti]] == 1)
-                    {
-                        int j;
-                        for(j = prm[Ti] + 1; bh[j]==0 && b2h[j]==1; j++)
-                            continue;
-                        for(int k = prm[Ti] + 1; k < j; k++)
-                            b2h[k] = 0;
-                    }
-                }
-            }
-
-            // update left side boundary
-            l = r + 1;
-            n++;
-        }
-
-        // update pos
-        for(int i = 0; i < len; i++)
-            pos[prm[i]] = i;
-
-        // copy b2h to bh
-        for(int i = 0; i < len; i++)
-            bh[i] = b2h[i];
-
-        // free temp dynamically allocated memory
-        free(left_most);
-
-        // print out information for debug
-        printf("********************AFTER*********************\n");
-        printf("i\tbh\tbh2\tprm\tpos\n");
-        for(int i = 0; i < len; i++)
-        {
-            printf("%d\t%d\t%d\t%d\t%d = %s\n",
-                    i,bh[i],b2h[i],prm[i],pos[i],str+pos[i]);
-            if(i < len-1 && bh[i+1] == 1)
-                printf("----------------------------------------------\n");
-        }
-    }
-
-/* free dynamically allocated memory */
-
-    free(prm);
-    free(bh);
-    free(b2h);
-    free(count);
-
-/* return suffix array */
-
-    return pos;
-}
-
 // refined version of ss_mm
-int* ss_mm_refined(char* str, int len)
+int* ss_mm(char* str, int len)
 {
 
 /* allocating memory for arrays required for sorting */
@@ -296,6 +111,8 @@ int* ss_mm_refined(char* str, int len)
     for(int H = 1; H < len; H <<= 1)
     {
 
+        printf("=====================H: %d ====================\n", H);
+
 /* reset prm such that prm[i] points to the left most bucket */
 
         // find how many bins
@@ -336,6 +153,17 @@ int* ss_mm_refined(char* str, int len)
                 set_bit(b2h, i);
             else
                 clear_bit(b2h, i);
+        }
+
+        // print out information for debug
+        printf("********************BEFORE********************\n");
+        printf("i\tbh\tbh2\tprm\tpos\n");
+        for(int i = 0; i < len; i++)
+        {
+            printf("%d\t%d\t%d\t%d\t%d = %s\n",
+                    i,get_bit(bh,i),get_bit(b2h,i),prm[i],pos[i],str+pos[i]);
+            if(i < len-1 && get_bit(bh,i+1) == 1)
+                printf("----------------------------------------------\n");
         }
 
         // scan bucket
@@ -399,6 +227,17 @@ int* ss_mm_refined(char* str, int len)
 
         // free temp dynamically allocated memory
         free(left_most);
+
+        // print out information for debug
+        printf("********************AFTER*********************\n");
+        printf("i\tbh\tbh2\tprm\tpos\n");
+        for(int i = 0; i < len; i++)
+        {
+            printf("%d\t%d\t%d\t%d\t%d = %s\n",
+                    i,get_bit(bh,i),get_bit(b2h,i),prm[i],pos[i],str+pos[i]);
+            if(i < len-1 && get_bit(bh,i+1) == 1)
+                printf("----------------------------------------------\n");
+        }
     }
 
 /* free dynamically allocated memory */
