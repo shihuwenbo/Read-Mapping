@@ -44,8 +44,38 @@ int* ss_naive(char* str, int len)
 }
 
 /*---------------------------------------------------------------------------*/
+// get the pos-th bit in the array bit_vector
+inline int get_bit(char* bit_vector, int pos)
+{
+    int idx = pos / 8;
+    int boff = pos % 8;
+    unsigned char byte = bit_vector[idx];
+    byte = byte << boff;
+    byte = byte >> 7;
+    return byte;
+}
+
+// set the pos-th bit in the bit_vector to 1
+inline void set_bit(char* bit_vector, int pos)
+{
+    int idx = pos / 8;
+    int boff = pos % 8;
+    unsigned char mask = 1 << (8 - boff -1);
+    bit_vector[idx] = bit_vector[idx] | mask;
+}
+
+// clear the pos-th bit in the bit_vector to 0
+inline void clear_bit(char* bit_vector, int pos)
+{
+    int idx = pos / 8;
+    int boff = pos % 8;
+    unsigned char mask = ~ (1 << (8 - boff -1));
+    bit_vector[idx] = bit_vector[idx] & mask;
+}
+
+/*---------------------------------------------------------------------------*/
 // helper function, given a letter, return its rank in the alphabet
-int alpha_rank(char l)
+inline int alpha_rank(char l)
 {
     // rank alphabetically $<a<c<g<t
     switch(l)
@@ -247,34 +277,4 @@ int* ss_mm(char* str, int len)
     free(count);
 
     return pos;
-}
-
-/*---------------------------------------------------------------------------*/
-// get the pos-th bit in the array bit_vector
-int get_bit(char* bit_vector, int pos)
-{
-    int idx = pos / 8;
-    int boff = pos % 8;
-    unsigned char byte = bit_vector[idx];
-    byte = byte << boff;
-    byte = byte >> 7;
-    return byte;
-}
-
-// set the pos-th bit in the bit_vector to 1
-void set_bit(char* bit_vector, int pos)
-{
-    int idx = pos / 8;
-    int boff = pos % 8;
-    unsigned char mask = 1 << (8 - boff -1);
-    bit_vector[idx] = bit_vector[idx] | mask;
-}
-
-// clear the pos-th bit in the bit_vector to 0
-void clear_bit(char* bit_vector, int pos)
-{
-    int idx = pos / 8;
-    int boff = pos % 8;
-    unsigned char mask = ~ (1 << (8 - boff -1));
-    bit_vector[idx] = bit_vector[idx] & mask;
 }
