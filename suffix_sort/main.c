@@ -5,7 +5,7 @@
 int main(int argc, char* argv[])
 {
     // test case
-    char test[] = "actaagaacaccgtggaacg$";
+    char test[] = "cgat$";
 
     // suffix array by naive sort
     int* sa0 = suffix_sorting_0(test, strlen(test));
