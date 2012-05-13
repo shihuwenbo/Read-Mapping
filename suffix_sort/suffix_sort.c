@@ -61,6 +61,7 @@ int* suffix_sorting_0(char* str, int len)
 // suffix sorting algorithm by manber and myers
 int* suffix_sorting_1(char* str, int len)
 {
+/* compute new length, str must be 2*N */
 /* allocating memory for arrays required for sorting */
 
     int* pos = (int*) malloc(len * sizeof(int));
@@ -103,6 +104,8 @@ int* suffix_sorting_1(char* str, int len)
 
     for(int H = 1; H < len; H <<= 1)
     {
+
+        printf("=====================H: %d ====================\n", H);
 
 /* reset prm such that prm[i] points to the left most bucket */
 
@@ -162,7 +165,18 @@ int* suffix_sorting_1(char* str, int len)
 
         // initialize b2h
         for(int i = 0; i < len; i++)
-            b2h[i] = 0;
+            b2h[i] = bh[i];
+
+        // print out information for debug
+        printf("********************BEFORE********************\n");
+        printf("i\tbh\tbh2\tprm\tpos\n");
+        for(int i = 0; i < len; i++)
+        {
+            printf("%d\t%d\t%d\t%d\t%d = %s\n",
+                    i,bh[i],b2h[i],prm[i],pos[i],str+pos[i]);
+            if(i < len-1 && bh[i+1] == 1)
+                printf("----------------------------------------------\n");
+        }
 
         // scan bucket
         int l = 0, r = 0, n = 0;
@@ -206,10 +220,7 @@ int* suffix_sorting_1(char* str, int len)
                         for(j = prm[Ti] + 1; bh[j]==0 && b2h[j]==1; j++)
                             continue;
                         for(int k = prm[Ti] + 1; k < j; k++)
-                        {
-                            // printf("setting b2h[%d] to 0\n", k);
                             b2h[k] = 0;
-                        }
                     }
                 }
             }
@@ -226,16 +237,22 @@ int* suffix_sorting_1(char* str, int len)
         // copy b2h to bh
         for(int i = 0; i < len; i++)
             bh[i] = b2h[i];
-        bh[0] = 1;
-
-        for(int i = 0; i < len; i++)
-            printf("%d ", pos[i]);
-        printf("\n");
 
         // free temp dynamically allocated memory
         free(bin_size);
         free(bin_offset);
         free(left_most);
+
+        // print out information for debug
+        printf("********************AFTER*********************\n");
+        printf("i\tbh\tbh2\tprm\tpos\n");
+        for(int i = 0; i < len; i++)
+        {
+            printf("%d\t%d\t%d\t%d\t%d = %s\n",
+                    i,bh[i],b2h[i],prm[i],pos[i],str+pos[i]);
+            if(i < len-1 && bh[i+1] == 1)
+                printf("----------------------------------------------\n");
+        }
     }
 
 /* free dynamically allocated memory */
