@@ -198,7 +198,7 @@ int* ss_mm(char* str, int len)
         */
 
         // scan bucket
-        int l = 0, r = 0, n = 0;
+        int l = 0, r = 0;
         while(l < len)
         {
             // find left and right boundary of a bucket
@@ -245,7 +245,6 @@ int* ss_mm(char* str, int len)
 
             // update left side boundary
             l = r + 1;
-            n++;
         }
 
         // update pos and bh

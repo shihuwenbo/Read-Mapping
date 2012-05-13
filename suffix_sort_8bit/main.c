@@ -45,7 +45,7 @@ int main(int argc, char* argv[])
     }
 
     // compare performance
-    for(int i = 10000000; i < 30000000; i += 1000000)
+    for(int i = 100000; i < 300000; i += 10000)
     {
         // generate test string
         char* test = (char*) malloc((i+2)*sizeof(char));
@@ -53,13 +53,19 @@ int main(int argc, char* argv[])
         test[i] = '$';
         for(int j = 0; j < i; j++)
         {
-            int rnd = randnum(0, 3);
+            int rnd = randnum(0, 9);
             switch(rnd)
             {
                 case 0: test[j] = 'a'; break;
-                case 1: test[j] = 'c'; break;
-                case 2: test[j] = 'g'; break;
-                case 3: test[j] = 't'; break;
+                case 1: test[j] = 'a'; break;
+                case 2: test[j] = 'a'; break;
+                case 3: test[j] = 'a'; break;
+                case 4: test[j] = 'a'; break;
+                case 5: test[j] = 'a'; break;
+                case 6: test[j] = 'a'; break;
+                case 7: test[j] = 'a'; break;
+                case 8: test[j] = 't'; break;
+                case 9: test[j] = 't'; break;
             }
         }
 
