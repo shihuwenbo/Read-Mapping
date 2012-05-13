@@ -117,48 +117,25 @@ int* ss_mm(char* str, int len)
                 num_bin++;
         }
 
-        // count how many elements in each bin
-        int* bin_size = (int*) malloc(num_bin*sizeof(int));
-        bin_size[0] = 1;
-        for(int i = 1; i < num_bin; i++)
-            bin_size[i] = 0;
-        for(int i = 1, j = 0; i < len; i++)
-        {
-            if(bh[i] == 1)
-                j++;
-            bin_size[j]++;
-        }
-
-        // compute offset
-        int* bin_offset = (int*) malloc(num_bin*sizeof(int));
-        bin_offset[0] = 0;
-        for(int i = 1; i < num_bin; i++)
-            bin_offset[i] = bin_offset[i-1] + bin_size[i-1];
-
         // find the left most position of each bin
         int* left_most = (int*) malloc(num_bin*sizeof(int));
-        for(int i = 0; i < num_bin; i++)
-            left_most[i] = 2147483647u;
-        for(int i = 0; i < len; i++)
+        for(int i = 0, j = 0; i < len; i++)
         {
-            int j;
-            for(j = 0; prm[i] >= bin_offset[j] && j < num_bin; j++)
-                continue;
-            j--;
-            if(prm[i] < left_most[j])
-                left_most[j] = prm[i];
+            if(bh[i] == 1)
+            {
+                left_most[j] = i;
+                j++;
+            }
         }
 
         // set prm[i] to point to the left most in each bin
-        for(int i = 0; i < len; i++)
+        for(int i = 0, j = -1; i < len; i++)
         {
-            int j;
-            for(j = 0; prm[i] >= bin_offset[j] && j < num_bin; j++)
-                continue;
-            j--;
-            prm[i] = left_most[j];
+            if(bh[i] == 1)
+                j++;
+            prm[pos[i]] = left_most[j];
         }
-
+        
         // initialize count
         for(int i = 0; i < len; i++)
             count[i] = 0;
@@ -239,8 +216,6 @@ int* ss_mm(char* str, int len)
             bh[i] = b2h[i];
 
         // free temp dynamically allocated memory
-        free(bin_size);
-        free(bin_offset);
         free(left_most);
 
         // print out information for debug
@@ -331,49 +306,23 @@ int* ss_mm_refined(char* str, int len)
                 num_bin++;
         }
 
-        if(num_bin == len)
-            break;
-
-        // count how many elements in each bin
-        int* bin_size = (int*) malloc(num_bin*sizeof(int));
-        bin_size[0] = 1;
-        for(int i = 1; i < num_bin; i++)
-            bin_size[i] = 0;
-        for(int i = 1, j = 0; i < len; i++)
-        {
-            if(get_bit(bh, i) == 1)
-                j++;
-            bin_size[j]++;
-        }
-
-        // compute offset
-        int* bin_offset = (int*) malloc(num_bin*sizeof(int));
-        bin_offset[0] = 0;
-        for(int i = 1; i < num_bin; i++)
-            bin_offset[i] = bin_offset[i-1] + bin_size[i-1];
-
         // find the left most position of each bin
         int* left_most = (int*) malloc(num_bin*sizeof(int));
-        for(int i = 0; i < num_bin; i++)
-            left_most[i] = 2147483647u;
-        for(int i = 0; i < len; i++)
+        for(int i = 0, j = 0; i < len; i++)
         {
-            int j;
-            for(j = 0; prm[i] >= bin_offset[j] && j < num_bin; j++)
-                continue;
-            j--;
-            if(prm[i] < left_most[j])
-                left_most[j] = prm[i];
+            if(get_bit(bh, i) == 1)
+            {
+                left_most[j] = i;
+                j++;
+            }
         }
 
         // set prm[i] to point to the left most in each bin
-        for(int i = 0; i < len; i++)
+        for(int i = 0, j = -1; i < len; i++)
         {
-            int j;
-            for(j = 0; prm[i] >= bin_offset[j] && j < num_bin; j++)
-                continue;
-            j--;
-            prm[i] = left_most[j];
+            if(get_bit(bh, i) == 1)
+                j++;
+            prm[pos[i]] = left_most[j];
         }
 
         // initialize count
@@ -449,8 +398,6 @@ int* ss_mm_refined(char* str, int len)
             bh[i] = b2h[i];
 
         // free temp dynamically allocated memory
-        free(bin_size);
-        free(bin_offset);
         free(left_most);
     }
 
