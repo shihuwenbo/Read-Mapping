@@ -65,16 +65,16 @@ int main(int argc, char* argv[])
 
         // for timing
         double time_naive = 0.0, time_mm = 0.0;
-       
-        // suffix array by manber and myers algorithm
-        start_timer(&time_mm);
-        int* sa1 = ss_mm(test, i + 1);
-        stop_timer(&time_mm);
 
         // suffix array by naive sort
         start_timer(&time_naive);
         int* sa0 = ss_naive(test, i + 1);
         stop_timer(&time_naive);
+
+        // suffix array by manber and myers algorithm
+        start_timer(&time_mm);
+        int* sa1 = ss_mm(test, i + 1);
+        stop_timer(&time_mm);
 
         // verify result
         for(int j = 0; j < i + 1; j++)
@@ -87,10 +87,12 @@ int main(int argc, char* argv[])
         }
 
         // print out result
-        printf("%d, %f, %f\n", i, time_naive, time_mm);
+        // printf("%d, %f, %f\n", i, time_naive, time_mm);
 
         // free up memory
         free(test);
+        free(sa0);
+        free(sa1);
     }
 
     return 0;
