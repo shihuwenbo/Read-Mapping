@@ -1,8 +1,8 @@
 // star timer
-void start_timer(double* start_time);
+void start_timer(double* time);
 
 // stop timer
-void stop_timer(double* start_time);
+void stop_timer(double* time);
 
 // generate random number between low and high
 int randnum(int low, int high);

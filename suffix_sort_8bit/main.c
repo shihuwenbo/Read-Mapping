@@ -51,8 +51,9 @@ int main(int argc, char* argv[])
         char* test = (char*) malloc((i+2)*sizeof(char));
         test[i+1] = '\0';
         test[i] = '$';
-        for(int j = 0; j < i; j++)
+        for(int j = 0; j < i/10; j++)
         {
+            /*
             int rnd = randnum(0, 9);
             switch(rnd)
             {
@@ -63,10 +64,21 @@ int main(int argc, char* argv[])
                 case 4: test[j] = 'a'; break;
                 case 5: test[j] = 'a'; break;
                 case 6: test[j] = 'a'; break;
-                case 7: test[j] = 'a'; break;
-                case 8: test[j] = 't'; break;
+                case 7: test[j] = 'c'; break;
+                case 8: test[j] = 'g'; break;
                 case 9: test[j] = 't'; break;
             }
+            */
+            test[j*10 + 0] = 'a';
+            test[j*10 + 1] = 't';
+            test[j*10 + 2] = 't';
+            test[j*10 + 3] = 'c';
+            test[j*10 + 4] = 'g';
+            test[j*10 + 5] = 'g';
+            test[j*10 + 6] = 'a';
+            test[j*10 + 7] = 'c';
+            test[j*10 + 8] = 'g';
+            test[j*10 + 9] = 'a';
         }
 
         // for timing
