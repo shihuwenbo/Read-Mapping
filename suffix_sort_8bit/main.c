@@ -45,40 +45,22 @@ int main(int argc, char* argv[])
     }
 
     // compare performance
-    for(int i = 100000; i < 300000; i += 10000)
+    for(int i = 0; i < 300000; i++)
     {
         // generate test string
         char* test = (char*) malloc((i+2)*sizeof(char));
         test[i+1] = '\0';
         test[i] = '$';
-        for(int j = 0; j < i/10; j++)
+        for(int j = 0; j < i; j++)
         {
-            /*
-            int rnd = randnum(0, 9);
+            int rnd = randnum(0, 3);
             switch(rnd)
             {
                 case 0: test[j] = 'a'; break;
-                case 1: test[j] = 'a'; break;
-                case 2: test[j] = 'a'; break;
-                case 3: test[j] = 'a'; break;
-                case 4: test[j] = 'a'; break;
-                case 5: test[j] = 'a'; break;
-                case 6: test[j] = 'a'; break;
-                case 7: test[j] = 'c'; break;
-                case 8: test[j] = 'g'; break;
-                case 9: test[j] = 't'; break;
+                case 1: test[j] = 'c'; break;
+                case 2: test[j] = 'g'; break;
+                case 3: test[j] = 't'; break;
             }
-            */
-            test[j*10 + 0] = 'a';
-            test[j*10 + 1] = 't';
-            test[j*10 + 2] = 't';
-            test[j*10 + 3] = 'c';
-            test[j*10 + 4] = 'g';
-            test[j*10 + 5] = 'g';
-            test[j*10 + 6] = 'a';
-            test[j*10 + 7] = 'c';
-            test[j*10 + 8] = 'g';
-            test[j*10 + 9] = 'a';
         }
 
         // for timing
@@ -106,6 +88,9 @@ int main(int argc, char* argv[])
 
         // print out result
         printf("%d, %f, %f\n", i, time_naive, time_mm);
+
+        // free up memory
+        free(test);
     }
 
     return 0;
