@@ -1,7 +1,8 @@
-#define GENOME_SIZE 3000000000u;
+#define GENOME_SIZE 3000000000u
 #define ENCODE_SIZE_2BIT 2
 #define ENCODE_SIZE_3BIT 3
 #define BYTE_SIZE 8
+#define SHORT_SIZE (2 * BYTE_SIZE)
 
 // star timer
 void start_timer(double* time);
@@ -38,3 +39,6 @@ void write_bp_3bit(char* genome, unsigned int pos, char val);
 
 // open the file named file_name and read it into memory
 void read_file(char* file_name, char** genome);
+
+// write memory to disk saved in file_name
+void write_file(char* file_name, char* genome, int encode_size);

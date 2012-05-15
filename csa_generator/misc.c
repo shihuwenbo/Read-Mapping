@@ -78,111 +78,138 @@ inline int alpha_rank(char l)
 // get the bp at pos
 char get_bp_2bit(char* genome, unsigned int pos)
 {
-    unsigned int byte_pos = pos / (BYTE_SIZE / ENCODE_SIZE_2BIT);
-    unsigned int byte_off = pos % (BYTE_SIZE / ENCODE_SIZE_2BIT);
+    unsigned int bit_pos = pos * ENCODE_SIZE_2BIT;
+    unsigned int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
     unsigned char dna = genome[byte_pos];
-    dna = dna << (byte_off * ENCODE_SIZE_2BIT);
+    dna = dna << byte_off;
     dna = dna >> (BYTE_SIZE - ENCODE_SIZE_2BIT);
     switch(dna)
     {
-        case 0: return 'A';
-        case 1: return 'C';
-        case 2: return 'G';
-        case 3: return 'T';
+        case 0: return 'a';
+        case 1: return 'c';
+        case 2: return 'g';
+        case 3: return 't';
     }
-    return '\0';
+    return '*';
 }
 
 // get the bp at pos
 char get_bp_3bit(char* genome, unsigned int pos)
 {
-    unsigned int byte_pos = pos / (BYTE_SIZE / ENCODE_SIZE_3BIT);
-    unsigned int byte_off = pos % (BYTE_SIZE / ENCODE_SIZE_3BIT);
-    unsigned char dna = genome[byte_pos];
-    dna = dna << (byte_off * ENCODE_SIZE_3BIT);
-    dna = dna >> (BYTE_SIZE - ENCODE_SIZE_3BIT);
+    unsigned int bit_pos = pos * ENCODE_SIZE_3BIT;
+    unsigned int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
+    unsigned char dna;
+    unsigned char bp0 = genome[byte_pos];
+    unsigned char bp1 = genome[byte_pos+1];
+    if(byte_off <= 5)
+    {
+        dna = bp0 << byte_off;
+        dna = dna >> (BYTE_SIZE - ENCODE_SIZE_3BIT);
+    }
+    else
+    {
+        dna = bp0 << byte_off;
+        dna = dna >> byte_off;
+        dna <<= byte_off - (BYTE_SIZE - ENCODE_SIZE_3BIT);
+        dna |= bp1 >> (2 * BYTE_SIZE - ENCODE_SIZE_3BIT - byte_off);
+    }
     switch(dna)
     {
         case 0: return '$';
-        case 1: return 'A';
-        case 2: return 'C';
-        case 3: return 'G';
-        case 4: return 'T';
+        case 1: return 'a';
+        case 2: return 'c';
+        case 3: return 'g';
+        case 4: return 't';
     }
-    return '\0';
+    return '*';
 }
 
 // write a bp at a position
 void write_bp_2bit(char* genome, unsigned int pos, char val)
 {
-    unsigned int byte_pos = pos / (BYTE_SIZE / ENCODE_SIZE_2BIT);
-    unsigned int byte_off = pos % (BYTE_SIZE / ENCODE_SIZE_2BIT) + 1;
+    unsigned int bit_pos = pos * ENCODE_SIZE_2BIT;
+    unsigned int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
     switch(val)
     {
-        case 'A':
+        case 'a':
         {
-            char mask = 0 << (BYTE_SIZE - byte_off * ENCODE_SIZE_2BIT);
+            char mask = 0 << (BYTE_SIZE - byte_off - ENCODE_SIZE_2BIT);
             genome[byte_pos] |= mask;
             break;
         }
-        case 'C':
+        case 'c':
         {
-            char mask = 1 << (BYTE_SIZE - byte_off * ENCODE_SIZE_2BIT);
+            char mask = 1 << (BYTE_SIZE - byte_off - ENCODE_SIZE_2BIT);
             genome[byte_pos] |= mask;
             break;
         }
-        case 'G':
+        case 'g':
         {
-            char mask = 2 << (BYTE_SIZE - byte_off * ENCODE_SIZE_2BIT);
+            char mask = 2 << (BYTE_SIZE - byte_off - ENCODE_SIZE_2BIT);
             genome[byte_pos] |= mask;
             break;
         }
-        case 'T':
+        case 't':
         {
-            char mask = 3 << (BYTE_SIZE - byte_off * ENCODE_SIZE_2BIT);
+            char mask = 3 << (BYTE_SIZE - byte_off - ENCODE_SIZE_2BIT);
             genome[byte_pos] |= mask;
             break;
         }
     }
+
 }
 
 // write a bp at a position
 void write_bp_3bit(char* genome, unsigned int pos, char val)
 {
-    unsigned int byte_pos = pos / (BYTE_SIZE / ENCODE_SIZE_3BIT);
-    unsigned int byte_off = pos % (BYTE_SIZE / ENCODE_SIZE_3BIT) + 1;
-    switch(val)
+    unsigned int bit_pos = pos * ENCODE_SIZE_3BIT;
+    unsigned int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
+    unsigned char mask = 0, next_mask = 0;
+    int shift_size = 0;
+    if(byte_off <= 5)
     {
-        case '$':
+        shift_size = BYTE_SIZE - byte_off - ENCODE_SIZE_3BIT;
+        switch(val)
         {
-            char mask = 0 << (BYTE_SIZE - byte_off * ENCODE_SIZE_3BIT);
-            genome[byte_pos] |= mask;
-            break;
+            case '$': mask = 0 << shift_size; break;
+            case 'a': mask = 1 << shift_size; break;
+            case 'c': mask = 2 << shift_size; break;
+            case 'g': mask = 3 << shift_size; break;
+            case 't': mask = 4 << shift_size; break;
         }
-        case 'A':
+        genome[byte_pos] |= mask;
+    }
+    else
+    {
+        switch(val)
         {
-            char mask = 1 << (BYTE_SIZE - byte_off * ENCODE_SIZE_3BIT);
-            genome[byte_pos] |= mask;
-            break;
+            case '$':
+                mask = 0 >> (byte_off - (BYTE_SIZE - ENCODE_SIZE_3BIT));
+                next_mask = 0 << (2*BYTE_SIZE-ENCODE_SIZE_3BIT-byte_off);
+                break;
+            case 'a':
+                mask = 1 >> (byte_off - (BYTE_SIZE - ENCODE_SIZE_3BIT));
+                next_mask = 1 << (2*BYTE_SIZE-ENCODE_SIZE_3BIT-byte_off);
+                break;
+            case 'c':
+                mask = 2 >> (byte_off - (BYTE_SIZE - ENCODE_SIZE_3BIT));
+                next_mask = 2 << (2*BYTE_SIZE-ENCODE_SIZE_3BIT-byte_off);
+                break;
+            case 'g':
+                mask = 3 >> (byte_off - (BYTE_SIZE - ENCODE_SIZE_3BIT));
+                next_mask = 3 << (2*BYTE_SIZE-ENCODE_SIZE_3BIT-byte_off);
+                break;
+            case 't':
+                mask = 4 >> (byte_off - (BYTE_SIZE - ENCODE_SIZE_3BIT));
+                next_mask = 4 << (2*BYTE_SIZE-ENCODE_SIZE_3BIT-byte_off);
+                break;
         }
-        case 'C':
-        {
-            char mask = 2 << (BYTE_SIZE - byte_off * ENCODE_SIZE_3BIT);
-            genome[byte_pos] |= mask;
-            break;
-        }
-        case 'G':
-        {
-            char mask = 3 << (BYTE_SIZE - byte_off * ENCODE_SIZE_3BIT);
-            genome[byte_pos] |= mask;
-            break;
-        }
-        case 'T':
-        {
-            char mask = 4 << (BYTE_SIZE - byte_off * ENCODE_SIZE_3BIT);
-            genome[byte_pos] |= mask;
-            break;
-        }
+        genome[byte_pos] |= mask;
+        genome[byte_pos + 1] |= next_mask;
     }
 }
 
@@ -200,4 +227,12 @@ void read_file(char* file_name, char** genome)
        exit(1);
     }
     fclose(file);
+}
+
+// write memory to disk saved in file_name
+void write_file(char* file_name, char* genome, int file_size)
+{
+    FILE* genome_file = fopen(file_name, "wb");
+    fwrite(genome, sizeof(char), file_size, genome_file);
+    fclose(genome_file);
 }
