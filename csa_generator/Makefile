@@ -1,19 +1,29 @@
 CC = gcc
-CCFLAG = -Wall -Werror -O3 -std=c99
-CSA_OBJECTS = csa.o suffix_sort.o misc.o
+CCFLAG = -Wall -Werror -O3 -std=c99 -lm
+SORT_OBJECTS = sort.o suffix_sort.o misc.o
 CONVERT_OBJECTS = convert.o misc.o
-BINARY = gen_csa convert
+CSA_OBJECTS = gen_csa.o suffix_sort.o misc.o csa.o
+BINARY = sort convert gencsa
 
 all: $(BINARY)
 
-gen_csa: $(CSA_OBJECTS)
-	$(CC) $(CSA_OBJECTS) $(CCFLAG) -o gen_csa
+gencsa: $(CSA_OBJECTS)
+	$(CC) $(CSA_OBJECTS) $(CCFLAG) -o gencsa
+
+sort: $(SORT_OBJECTS)
+	$(CC) $(SORT_OBJECTS) $(CCFLAG) -o sort
 
 convert: $(CONVERT_OBJECTS)
 	$(CC) $(CONVERT_OBJECTS) $(CCFLAG) -o convert
 
+gen_csa.o: gen_csa.c
+	$(CC) $(CCFLAG) -c gen_csa.c
+
 csa.o: csa.c
 	$(CC) $(CCFLAG) -c csa.c
+
+sort.o: sort.c
+	$(CC) $(CCFLAG) -c sort.c
 
 convert.o: convert.c
 	$(CC) $(CCFLAG) -c convert.c
@@ -31,7 +41,7 @@ clobber:
 	rm -f *.o $(BINARY) Makefile~ *.tar.gz
 
 tarball:
-	mkdir csa_generator
-	cp *.h *.c Makefile csa_generator
-	tar -pcvf csa_generator.tar.gz csa_generator/
-	rm -rf csa_generator
+	mkdir read_mapping
+	cp *.h *.c Makefile read_mapping
+	tar -pcvf read_mapping.tar.gz read_mapping/
+	rm -rf read_mapping/

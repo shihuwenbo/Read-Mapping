@@ -1,99 +1,41 @@
-#include "suffix_sort.h"
 #include "misc.h"
+#include "suffix_sort.h"
+#include <math.h>
 #include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
 
-int main(int argc, char* argv[])
+// generate compresses suffix array
+void gen_csa(char* str, unsigned int len)
 {
-    if(argc >= 2)
-    {
-        // for timing in microsecond
-        double time;
+    /* compute segment size */
+    double lseg = ceil(((double)len) / (log(len)/log(2)));
+    unsigned int nseg = (unsigned int) ceil((double) (len) / lseg);
 
-        // suffix array by naive sort
-        start_timer(&time);
-        int* sa0 = ss_naive_8bit(argv[1], strlen(argv[1]));
-        stop_timer(&time);
-        printf("ss_naive: %f\tmsec\n", time);
+    /* compute the suffix array of the last segment */
+    int lst_seg_pos = (nseg-1) * lseg;
+    int lst_seg_len = len - lst_seg_pos;
 
-        // suffix array by manber and myers algorithm
-        start_timer(&time);
-        int* sa1 = ss_mm_8bit(argv[1], strlen(argv[1]));
-        stop_timer(&time);
-        printf("ss_mm:    %f\tmsec\n", time);
+    /* compute the first suffix array and the inverse of suffix array */
+    char* lst_seg = str + lst_seg_pos;
+    int* lst_sa = ss_mm_8bit(lst_seg, lst_seg_len);
+    int* lst_sa_inv = (int*) malloc(lst_seg_len*sizeof(int));
+    for(int i = 0; i < lst_seg_len; i++)
+        lst_sa_inv[lst_sa[i]] = i;
 
-        // verify result
-        for(int i = 0; i < strlen(argv[1]); i++)
-        {
-            if(sa0[i] != sa1[i])
-            {
-                printf("Test failed!\n");
-                return 0;
-            }
-        }
+    /* compute psi */
+    int* psi = (int*) malloc(lst_seg_len*sizeof(int));
+    psi[0] = lst_sa_inv[0];
+    for(int i = 1; i < lst_seg_len; i++)
+        psi[i] = lst_sa_inv[lst_sa[i]+1];
 
-        /*
-        // print out suffix array
-        printf("suffix array: ");
-        for(int i = 0; i < strlen(argv[1]); i++)
-            printf("%d ", sa1[i]);
-        printf("\n");
-        */
+    /* print out psi for debug */
+    /*
+    for(int i = 0; i < lst_seg_len; i++)
+        printf("%d ", psi[i]);
+    printf("\n");
+    */
 
-        return 0;
-    }
-
-    // compare performance
-    for(int i = 0; i < 300000; i++)
-    {
-        // generate test string
-        char* test = (char*) malloc((i+2)*sizeof(char));
-        test[i+1] = '\0';
-        test[i] = '$';
-        for(int j = 0; j < i; j++)
-        {
-            int rnd = randnum(0, 3);
-            switch(rnd)
-            {
-                case 0: test[j] = 'a'; break;
-                case 1: test[j] = 'c'; break;
-                case 2: test[j] = 'g'; break;
-                case 3: test[j] = 't'; break;
-            }
-        }
-
-        // for timing
-        double time_naive = 0.0, time_mm = 0.0;
-
-        // suffix array by naive sort
-        start_timer(&time_naive);
-        int* sa0 = ss_naive_8bit(test, i + 1);
-        stop_timer(&time_naive);
-
-        // suffix array by manber and myers algorithm
-        start_timer(&time_mm);
-        int* sa1 = ss_mm_8bit(test, i + 1);
-        stop_timer(&time_mm);
-
-        // verify result
-        for(int j = 0; j < i + 1; j++)
-        {
-            if(sa0[j] != sa1[j])
-            {
-                printf("Test failed!\n");
-                return 0;
-            }
-        }
-
-        // print out result
-        // printf("%d, %f, %f\n", i, time_naive, time_mm);
-
-        // free up memory
-        free(test);
-        free(sa0);
-        free(sa1);
-    }
-
-    return 0;
+    /* free memory */
+    free(lst_sa);
+    free(lst_sa_inv);
 }
