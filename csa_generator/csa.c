@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // generate compresses suffix array
 void gen_csa(char* str, unsigned int len)
@@ -28,14 +29,48 @@ void gen_csa(char* str, unsigned int len)
     for(int i = 1; i < lst_seg_len; i++)
         psi[i] = lst_sa_inv[lst_sa[i]+1];
 
-    /* print out psi for debug */
-    /*
+    /* compute ac and nc for each letter in the alphabet */
+    int ac[ALPHA_SIZE + 1];
+    int nc[ALPHA_SIZE + 1];
+    memset(nc, 0, (ALPHA_SIZE+1)*sizeof(int));
+    memset(ac, 0, (ALPHA_SIZE+1)*sizeof(int));
+    char* alphabet = "$acgt";
     for(int i = 0; i < lst_seg_len; i++)
-        printf("%d ", psi[i]);
-    printf("\n");
-    */
+    {
+        for(int j = 0; j < ALPHA_SIZE + 1; j++)
+        {
+            if(lst_seg[i] < alphabet[j])
+                ac[j]++;
+            if(lst_seg[i] == alphabet[j])
+                nc[j]++;
+        }
+    }
+
+    /* verify theory: psi should be an increasing sequence */
+    int* covered = (int*) malloc(lst_seg_len*sizeof(int));
+    memset(covered, 0, lst_seg_len*sizeof(int));
+    for(int i = 0; i < ALPHA_SIZE + 1; i++)
+    {
+        int start = ac[i], end = ac[i] + nc[i];
+        covered[psi[start]] = 1;
+        for(int j = start + 1; j < end; j++)
+        {
+            covered[psi[j]] = 1;
+            if(psi[j-1] > psi[j])
+                printf("psi[%d] < psi[%d]\n",j,j-1);
+        }
+    }
+
+    /* verify theory: psi should cover all indexes */
+    for(int i = 0; i < lst_seg_len; i++)
+    {
+        if(covered[i] == 0)
+            printf("%d: missing\n", i);
+    }
 
     /* free memory */
     free(lst_sa);
     free(lst_sa_inv);
+    free(psi);
+    free(covered);
 }
