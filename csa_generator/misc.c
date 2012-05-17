@@ -78,9 +78,9 @@ inline int alpha_rank(char l)
 // get the bp at pos
 char get_bp_2bit(char* genome, unsigned int pos)
 {
-    unsigned int bit_pos = pos * ENCODE_SIZE_2BIT;
-    unsigned int byte_pos = bit_pos / BYTE_SIZE;
-    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
+    unsigned long long int bit_pos = pos * ENCODE_SIZE_2BIT;
+    unsigned long long int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned long long int byte_off = bit_pos - byte_pos * BYTE_SIZE;
     unsigned char dna = genome[byte_pos];
     dna = dna << byte_off;
     dna = dna >> (BYTE_SIZE - ENCODE_SIZE_2BIT);
@@ -97,9 +97,9 @@ char get_bp_2bit(char* genome, unsigned int pos)
 // get the bp at pos
 char get_bp_3bit(char* genome, unsigned int pos)
 {
-    unsigned int bit_pos = pos * ENCODE_SIZE_3BIT;
-    unsigned int byte_pos = bit_pos / BYTE_SIZE;
-    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
+    unsigned long long int bit_pos = pos * ENCODE_SIZE_3BIT;
+    unsigned long long int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned long long int byte_off = bit_pos - byte_pos * BYTE_SIZE;
     unsigned char dna;
     unsigned char bp0 = genome[byte_pos];
     unsigned char bp1 = genome[byte_pos+1];
@@ -129,9 +129,9 @@ char get_bp_3bit(char* genome, unsigned int pos)
 // write a bp at a position
 void write_bp_2bit(char* genome, unsigned int pos, char val)
 {
-    unsigned int bit_pos = pos * ENCODE_SIZE_2BIT;
-    unsigned int byte_pos = bit_pos / BYTE_SIZE;
-    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
+    unsigned long long int bit_pos = pos * ENCODE_SIZE_2BIT;
+    unsigned long long int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned long long int byte_off = bit_pos - byte_pos * BYTE_SIZE;
     switch(val)
     {
         case 'a':
@@ -165,9 +165,9 @@ void write_bp_2bit(char* genome, unsigned int pos, char val)
 // write a bp at a position
 void write_bp_3bit(char* genome, unsigned int pos, char val)
 {
-    unsigned int bit_pos = pos * ENCODE_SIZE_3BIT;
-    unsigned int byte_pos = bit_pos / BYTE_SIZE;
-    unsigned int byte_off = bit_pos - byte_pos * BYTE_SIZE;
+    unsigned long long int bit_pos = pos * ENCODE_SIZE_3BIT;
+    unsigned long long int byte_pos = bit_pos / BYTE_SIZE;
+    unsigned long long int byte_off = bit_pos - byte_pos * BYTE_SIZE;
     unsigned char mask = 0, next_mask = 0;
     int shift_size = 0;
     if(byte_off <= 5)

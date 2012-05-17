@@ -23,6 +23,21 @@ int main(int argc, char* argv[])
     {
         char bp = get_bp_2bit(genome_2bit, i);
         write_bp_3bit(genome_3bit, i, bp);
+        if(bp != get_bp_3bit(genome_3bit, i))
+        {
+            printf("%d: %c != %c\n", i, bp, get_bp_3bit(genome_3bit, i));
+            exit(1);
+        }
+    }
+    for(unsigned int i = 0; i < GENOME_SIZE; i++)
+    {
+        char bp2 = get_bp_2bit(genome_2bit, i);
+        char bp3 = get_bp_3bit(genome_3bit, i);
+        if(bp2 != bp3)
+        {
+            printf("%d: %c != %c\n", i, bp2, bp3);
+            exit(1);
+        }
     }
     printf("2 bit file converted\n");
     write_file(argv[2], genome_3bit, file_size);

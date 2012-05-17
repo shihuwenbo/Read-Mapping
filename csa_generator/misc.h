@@ -1,8 +1,7 @@
-#define GENOME_SIZE 3000000000u
-#define ENCODE_SIZE_2BIT 2
-#define ENCODE_SIZE_3BIT 3
-#define BYTE_SIZE 8
-#define SHORT_SIZE (2 * BYTE_SIZE)
+#define GENOME_SIZE ((unsigned long long int) 3000000000u)
+#define ENCODE_SIZE_2BIT ((unsigned long long int) 2)
+#define ENCODE_SIZE_3BIT ((unsigned long long int) 3)
+#define BYTE_SIZE ((unsigned long long int) 8)
 
 // star timer
 void start_timer(double* time);
