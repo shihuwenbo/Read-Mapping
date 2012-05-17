@@ -20,8 +20,18 @@ convert.o: convert.c
 
 suffix_sort.o: suffix_sort.c
 	$(CC) $(CCFLAG) -c suffix_sort.c
+
 misc.o: misc.c
 	$(CC) $(CCFLAG) -c misc.c
 
 clean:
-	rm *.o $(BINARY)
+	rm -f *.o Makefile~ *.tar.gz
+
+clobber:
+	rm -f *.o $(BINARY) Makefile~ *.tar.gz
+
+tarball:
+	mkdir csa_generator
+	cp *.h *.c Makefile csa_generator
+	tar -pcvf csa_generator.tar.gz csa_generator/
+	rm -rf csa_generator

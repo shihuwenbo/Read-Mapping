@@ -51,10 +51,10 @@ int* ss_mm_8bit(char* str, int len)
 
     /* allocating memory for arrays required for sorting */
 
-    int* pos = (int*) malloc(len * sizeof(int));
-    int* prm = (int*) malloc(len * sizeof(int));
-    int* count = (int*) malloc(len * sizeof(int));
-    int bit_vect_sz = (len - 1) / 8 + 1;
+    int* pos = (int*) malloc((len+1) * sizeof(int));
+    int* prm = (int*) malloc((len+1) * sizeof(int));
+    int* count = (int*) malloc((len+1) * sizeof(int));
+    int bit_vect_sz = (len - 1) / 8 + 2;
     char* bh = (char*) malloc(bit_vect_sz * sizeof(char));
     char* b2h = (char*) malloc(bit_vect_sz * sizeof(char));
 
