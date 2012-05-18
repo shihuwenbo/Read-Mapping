@@ -68,6 +68,8 @@ void gen_csa(char* str, unsigned int len)
             printf("%d: missing\n", i);
     }
 
+    /* construct the compressed psi using rice coding */
+
     /* free memory */
     free(lst_sa);
     free(lst_sa_inv);

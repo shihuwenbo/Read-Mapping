@@ -1,5 +1,5 @@
 CC = gcc
-CCFLAG = -Wall -Werror -O3 -std=c99 -lm
+CCFLAG = -Wall -O3 -std=c99 -lm
 SORT_OBJECTS = sort.o suffix_sort.o misc.o
 CONVERT_OBJECTS = convert.o misc.o
 CSA_OBJECTS = gen_csa.o suffix_sort.o misc.o csa.o

@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <math.h>
 
 // start timer
 void start_timer(double* time)
@@ -235,4 +236,71 @@ void write_file(char* file_name, char* genome, int file_size)
     FILE* genome_file = fopen(file_name, "wb");
     fwrite(genome, sizeof(char), file_size, genome_file);
     fclose(genome_file);
+}
+
+// create the data structure that supports O(1) select operation
+void create_select_table(char* bitvect, unsigned int len, char** dir1,
+        char** dir2, char** dir3)
+{
+    // initialization
+    *dir1 = NULL;
+    *dir2 = NULL;
+    *dir3 = NULL;
+
+    // block size for first level directory
+    unsigned int blksz = (unsigned int) (ceil(log((double)len)/log(2.0)) *
+                            ceil(log(log((double)len)/log(2.0))/log(2.0)));
+
+    // number of entries for first level directory
+    unsigned int nent1 = (unsigned int) floor(((double)len)/((double)blksz));
+
+    // number of bits to represent an entry
+    //unsigned int entsz1 = (unsigned int) (ceil(log((double)len)/log(2.0)));
+
+    // initialize first level directory
+    (*dir2) = (char*) malloc(nent1*sizeof(char));
+    for(unsigned int i = blksz - 1; i < len; i += blksz)
+    {
+    }
+}
+
+// return the integer at a position
+unsigned int get_int(char* intary, unsigned int intsz, unsigned int pos)
+{
+    unsigned int rt = 0;
+    unsigned int mask = 0;
+    unsigned int bit_pos = intsz * pos;
+    for(unsigned int i = 0; i < intsz; i++)
+    {
+        int bit = get_bit(intary, bit_pos+i);
+        if(bit == 1)
+        {
+            mask = 1 << (intsz - i - 1);
+            rt |= mask;
+        }
+        else
+        {
+            mask = ~ 1 << (intsz - i - 1);
+            rt &= mask;
+        }
+    }
+    return rt;
+}
+
+// write a integer at a position
+void write_int(char* intary, unsigned int intsz,
+                unsigned int pos, unsigned int val)
+{
+    unsigned int bit_pos = (pos + 1) * intsz - 1;
+    unsigned int tmp_val = 0;
+    for(unsigned int i = 0; i < intsz; i++)
+    {
+        tmp_val = val;
+        tmp_val = tmp_val << (INT_SIZE - i - 1);
+        tmp_val = tmp_val >> (INT_SIZE - 1);
+        if(tmp_val == 1)
+            set_bit(intary, bit_pos - i);
+        else
+            clear_bit(intary, bit_pos - i);
+    }
 }
