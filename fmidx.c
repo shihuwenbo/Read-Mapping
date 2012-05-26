@@ -25,11 +25,11 @@ int main(int argc, char* argv[])
         for(unsigned int i = 0, j = 0; i < num - 1; i++)
         {
             char bp = get_bp_3bit(genome, i);
-            if(bp < '$') smld++;
-            if(bp < 'a') smla++;
-            if(bp < 'c') smlc++;
-            if(bp < 'g') smlg++;
-            if(bp < 't') smlt++;
+            if(bp == '$') smld++;
+            if(bp == 'a') smla++;
+            if(bp == 'c') smlc++;
+            if(bp == 'g') smlg++;
+            if(bp == 't') smlt++;
 
             if(bp == '$') numd++;
             if(bp == 'a') numa++;
@@ -47,11 +47,6 @@ int main(int argc, char* argv[])
             }
         }
 
-        if(smld != 0)
-        {
-            printf("Error: smld != 0\n");
-            return 0;
-        }
         if(numd > 1)
         {
             printf("Error: numd > 1\n");

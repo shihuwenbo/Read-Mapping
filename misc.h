@@ -8,6 +8,9 @@
 #define BWT_DPOS ((unsigned long long int) 5777)
 #define REV_BWT_DPOS ((unsigned long long int) 14691)
 #define READ_NUM ((unsigned long long int) 100)
+#define READ_SIZE ((unsigned long long int) 30)
+#define ANS_SIZE ((unsigned long long int) 5)
+#define K_ERR ((unsigned long long int) 2)
 
 #include <stdlib.h>
 
