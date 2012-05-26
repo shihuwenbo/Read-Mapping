@@ -2,7 +2,7 @@ CC = gcc
 CCFLAG = -Wall -Werror -O3 -std=c99 -lm
 SUFSORT_OBJ = sufsort.o misc.o suffix_sort.o
 GENTEST_OBJ = misc.o gentest.o
-BINARY = sufsort gentest resume
+BINARY = sufsort gentest convert fmidx
 
 all: $(BINARY)
 
@@ -15,11 +15,17 @@ gentest.o: gentest.c
 sufsort: $(SUFSORT_OBJ)
 	$(CC) $(SUFSORT_OBJ) $(CCFLAG) -o sufsort
 
-resume: misc.o resume.o
-	$(CC) misc.o resume.o $(CCFLAG) -o resume
+convert: misc.o convert.o
+	$(CC) $(CCFLAG) misc.o convert.o -o convert
 
-resume.o: resume.c
-	$(CC) $(CCFLAG) -c resume.c
+convert.o: convert.c
+	$(CC) $(CCFLAG) -c convert.c
+
+fmidx: fmidx.o misc.o
+	$(CC) $(CCFLAG) misc.o fmidx.o -o fmidx
+
+fmidx.o: fmidx.c
+	$(CC) $(CCFLAG) -c fmidx.c
 
 sufsort.o: sufsort.c
 	$(CC) $(CCFLAG) -c sufsort.c

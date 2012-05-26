@@ -1,6 +1,0 @@
-echo "generating genome file..."
-time ./encoder genome_file > extracted_genome_file
-echo "decoding genome file..."
-time ./decoder genome_file > decoded_genome_file
-echo "verifying result..."
-diff extracted_genome_file decoded_genome_file > diff_result

@@ -28,13 +28,13 @@ int main(int argc, char* argv[])
         if(argv[2][0] == 't' || argv[2][0] == 'T')
             len = GENOME_SIZE;
         unsigned int fsz2bit = (2*len-1)/BYTE_SIZE + 1;
-        unsigned int fsz3bit = (3*len-1)/BYTE_SIZE + 1;
+        unsigned int fsz3bit = (3*len-1)/BYTE_SIZE + 2;
         char* genome_2bit = (char*) malloc(fsz2bit*sizeof(char));
         char* genome_3bit = (char*) malloc(fsz3bit*sizeof(char));
         memset(genome_2bit, 0, fsz2bit);
         memset(genome_3bit, 0, fsz3bit);
         printf("generating file...\n");
-        for(unsigned int i = 0; i < len - 1; i++)
+        for(unsigned int i = 0; i < len; i++)
         {
             int rnd = randnum(0, 3);
             char bp = '*';

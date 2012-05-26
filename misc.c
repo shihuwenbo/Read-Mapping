@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <math.h>
 #include <string.h>
 
 // start timer
@@ -25,7 +24,7 @@ void stop_timer(double* time)
 }
 
 // generate random number between low and high
-int randnum(int low, int high)
+unsigned int randnum(unsigned int low, unsigned int high)
 {
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -34,10 +33,10 @@ int randnum(int low, int high)
 }
 
 // get the pos-th bit in the array bit_vector
-inline int get_bit(char* bit_vector, int pos)
+unsigned int get_bit(char* bit_vector, unsigned int pos)
 {
-    int idx = pos / 8;
-    int boff = pos % 8;
+    unsigned int idx = pos / 8;
+    unsigned int boff = pos % 8;
     unsigned char byte = bit_vector[idx];
     byte = byte << boff;
     byte = byte >> 7;
@@ -45,25 +44,25 @@ inline int get_bit(char* bit_vector, int pos)
 }
 
 // set the pos-th bit in the bit_vector to 1
-inline void set_bit(char* bit_vector, int pos)
+void set_bit(char* bit_vector, unsigned int pos)
 {
-    int idx = pos / 8;
-    int boff = pos % 8;
+    unsigned int idx = pos / 8;
+    unsigned int boff = pos % 8;
     unsigned char mask = 1 << (8 - boff -1);
     bit_vector[idx] = bit_vector[idx] | mask;
 }
 
 // clear the pos-th bit in the bit_vector to 0
-inline void clear_bit(char* bit_vector, int pos)
+void clear_bit(char* bit_vector, unsigned int pos)
 {
-    int idx = pos / 8;
-    int boff = pos % 8;
+    unsigned int idx = pos / 8;
+    unsigned int boff = pos % 8;
     unsigned char mask = ~ (1 << (8 - boff -1));
     bit_vector[idx] = bit_vector[idx] & mask;
 }
 
 // given a letter, return its rank in the alphabet
-inline int alpha_rank(char l)
+unsigned int alpha_rank(char l)
 {
     // rank alphabetically $<a<c<g<t
     switch(l)
@@ -171,7 +170,7 @@ void write_bp_3bit(char* genome, unsigned int pos, char val)
     unsigned long long int byte_pos = bit_pos / BYTE_SIZE;
     unsigned long long int byte_off = bit_pos - byte_pos * BYTE_SIZE;
     unsigned char mask = 0, next_mask = 0;
-    int shift_size = 0;
+    unsigned int shift_size = 0;
     if(byte_off <= 5)
     {
         shift_size = BYTE_SIZE - byte_off - ENCODE_SIZE_3BIT;
@@ -238,47 +237,6 @@ void write_file(char* file_name, char* genome, size_t file_size)
     FILE* genome_file = fopen(file_name, "wb");
     fwrite(genome, sizeof(char), file_size, genome_file);
     fclose(genome_file);
-}
-
-// create the data structure that supports O(1) select operation
-void create_select_table(char* bitvect, unsigned int len, char** dir1,
-        char** dir2, char** dir3)
-{
-    // initialization
-    *dir1 = NULL;
-    *dir2 = NULL;
-    *dir3 = NULL;
-
-    // block size for first level directory
-    unsigned int blksz = (unsigned int) (ceil(log((double)len)/log(2.0)) *
-                            ceil(log(log((double)len)/log(2.0))/log(2.0)));
-
-    // initialize first directory
-    unsigned int nent1 = (unsigned int) floor(((double)len)/((double)blksz));
-    unsigned int entsz1 = (unsigned int) (ceil(log((double)len)/log(2.0)));
-    unsigned int dirsz1 = (nent1*entsz1-1)/BYTE_SIZE + 1;
-    (*dir1) = (char*) malloc(dirsz1*sizeof(char));
-    for(unsigned int i = 0; i < nent1; i++)
-        write_int(*dir1, entsz1, i, 0);
-    
-    // generate the first directory
-    int bitcnt = 0, diriter = 0;
-    for(unsigned int i = 0; i < len; i++)
-    {
-        if(get_bit(bitvect, i) == 1)
-        {
-            bitcnt++;
-            if(bitcnt % blksz == 0)
-            {
-                printf("i: %d\n", i);
-                write_int(*dir1, entsz1, diriter, i);
-                diriter++;
-            }
-        }
-    }
-
-    // check if need to generate second directory
-
 }
 
 // return the integer at a position
