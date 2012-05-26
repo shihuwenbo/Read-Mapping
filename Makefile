@@ -2,9 +2,15 @@ CC = gcc
 CCFLAG = -Wall -Werror -O3 -std=c99 -lm
 SUFSORT_OBJ = sufsort.o misc.o suffix_sort.o
 GENTEST_OBJ = misc.o gentest.o
-BINARY = sufsort gentest convert fmidx
+BINARY = sufsort gentest convert fmidx map
 
 all: $(BINARY)
+
+map: search.o map.o misc.o
+	$(CC) map.o search.o misc.o $(CCFLAG) -o map
+
+map.o: map.c
+	$(CC) $(CCFLAG) -c map.c
 
 gentest: $(GENTEST_OBJ)
 	$(CC) $(GENTEST_OBJ) $(CCFLAG) -o gentest
@@ -35,6 +41,9 @@ suffix_sort.o: suffix_sort.c
 
 misc.o: misc.c
 	$(CC) $(CCFLAG) -c misc.c
+
+search.o: search.c
+	$(CC) $(CCFLAG) -c search.c
 
 clean:
 	rm -f *.o Makefile~ *.tar.gz

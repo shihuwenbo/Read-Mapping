@@ -522,3 +522,4 @@ unsigned int* ss_mm_3bit(char* str, unsigned int len)
 
     return pos;
 }
+

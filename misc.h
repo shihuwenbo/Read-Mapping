@@ -5,6 +5,9 @@
 #define BYTE_SIZE ((unsigned long long int) 8)
 #define INT_SIZE ((unsigned int) 32)
 #define SAMPLE_SIZE ((unsigned long long int) 40)
+#define BWT_DPOS ((unsigned long long int) 5777)
+#define REV_BWT_DPOS ((unsigned long long int) 14691)
+#define READ_NUM ((unsigned long long int) 100)
 
 #include <stdlib.h>
 

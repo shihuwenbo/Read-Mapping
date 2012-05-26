@@ -20,11 +20,12 @@ int main(int argc, char* argv[])
             size_t dst_size = (num * 3 - 1)/8 + 1;
             dst = (char*) malloc(dst_size*sizeof(char));
             memset(dst, 0, dst_size*sizeof(char));
-            for(unsigned int i = 0; i < num; i++)
+            for(unsigned int i = 0; i < num - 1; i++)
             {
-                char bp = get_bp_3bit(src, num - i - 1);
+                char bp = get_bp_3bit(src, num - i - 2);
                 write_bp_3bit(dst, i, bp);
             }
+            write_bp_3bit(dst, num - 1, '$');
             char rev_fn[100];
             memset(rev_fn, 0, 100);
             sprintf(rev_fn, "%s_rev", argv[1]);
@@ -85,8 +86,11 @@ int main(int argc, char* argv[])
                 char bp = get_bp_3bit(src, i);
                 if(bp == '$')
                     printf("$ is at: %d\n", i);
-                write_bp_2bit(dst, j, bp);
-                j++;
+                else
+                {
+                    write_bp_2bit(dst, j, bp);
+                    j++;
+                }
             }
             char rev_fn[100];
             memset(rev_fn, 0, 100);
