@@ -83,6 +83,11 @@ int main(int argc, char* argv[])
             for(unsigned int i = 0; i < num; i++)
             {
                 char bp = get_bp_3bit(src, i);
+                if(bp == '$')
+                {
+                    printf("$ is at: %d\n", i);
+                    i--;
+                }
                 write_bp_2bit(dst, i, bp);
             }
             char rev_fn[100];
