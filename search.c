@@ -10,21 +10,25 @@ void search(char* bwt, unsigned int genome_size, char* sr, unsigned int* psa,
         unsigned int* occ, unsigned int spsize, unsigned int* all_ans,
         unsigned int ans_size, unsigned int kerr)
 {
-    for(unsigned int i = 0; i < 2; i++)
+    const char alphabet[] = "acgt";
+    for(unsigned int i = 0; i < read_num; i++)
     {
         unsigned int* ans_ptr = all_ans + i * ans_size;
         unsigned int lst = (i + 1)* read_size -1;
-        kmismatch(sr,bwt,sml,occ,psa,kerr,lst,1,genome_size-1,ans_ptr,
-            0,ans_size,genome_size,spsize);
+        kmismatch(sr,bwt,sml,occ,psa,kerr,lst,0,genome_size-1,ans_ptr,
+            0,ans_size,genome_size,spsize,alphabet);
     }
 }
 
 // given a bwt and a partial occ array, find the actual occ value
 unsigned int get_occ(char* bwt, unsigned int* occ, unsigned int genome_size,
-        unsigned int sample_size, unsigned int pos, char alpha)
+        unsigned int sample_size, long long int pos, char alpha)
 {
+    if(pos < 0)
+        return 0;
+
     unsigned int occ_off = pos / sample_size;
-    unsigned int* base_ptr = &occ[occ_off * ALPHA_SIZE];
+    unsigned int* base_ptr = &occ[occ_off*ALPHA_SIZE];
 
     unsigned int occi = 0;
     switch(alpha)
@@ -53,7 +57,8 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
         unsigned int* occ, unsigned int* psa, long long int kerr,
         unsigned int lst, unsigned int sp, unsigned int ep, unsigned int* ans,
         unsigned int ans_cnt, unsigned int ans_size,
-        unsigned int genome_size, unsigned int sample_size)
+        unsigned int genome_size, unsigned int sample_size,
+        const char *alphabet)
 {
     if(sp > ep || ans_cnt >= ans_size)
         return 0;
@@ -72,64 +77,22 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
 
     unsigned sp2 = 0, ep2 = 0, kerr2 = 0, new_ans_cnt = ans_cnt;
     
-    // for a
-    sp2 = sml[alpha_rank('a')] + 1 +
-        get_occ(bwt,occ,genome_size,sample_size,sp-1,'a');
-    ep2 = sml[alpha_rank('a')] +
-        get_occ(bwt,occ,genome_size,sample_size,ep,'a');
-    if(get_bp_2bit(sr, lst) != 'a')
-        kerr2 = kerr - 1;
-    else
-        kerr2 = kerr;
-    if(kerr2 >= 0)
+    for(unsigned int i = 0; i < ALPHA_SIZE; i++)
     {
-        new_ans_cnt += kmismatch(sr,bwt,sml,occ,psa,kerr2,
-                 lst-1,sp2,ep2,ans,new_ans_cnt,ans_size,genome_size,sample_size);
-    }
-
-    // for c
-    sp2 = sml[alpha_rank('c')] + 1 +
-        get_occ(bwt,occ,genome_size,sample_size,sp-1,'c');
-    ep2 = sml[alpha_rank('c')] +
-        get_occ(bwt,occ,genome_size,sample_size,ep,'c');
-    if(get_bp_2bit(sr, lst) != 'c')
-        kerr2 = kerr - 1;
-    else
-        kerr2 = kerr;
-    if(kerr2 >= 0)
-    {
-        new_ans_cnt += kmismatch(sr,bwt,sml,occ,psa,kerr2,
-                 lst-1,sp2,ep2,ans,new_ans_cnt,ans_size,genome_size,sample_size);
-    }
-
-    // for g
-    sp2 = sml[alpha_rank('g')] + 1 +
-        get_occ(bwt,occ,genome_size,sample_size,sp-1,'g');
-    ep2 = sml[alpha_rank('g')] +
-        get_occ(bwt,occ,genome_size,sample_size,ep,'g');
-    if(get_bp_2bit(sr, lst) != 'g')
-        kerr2 = kerr - 1;
-    else
-        kerr2 = kerr;
-    if(kerr2 >= 0)
-    {
-        new_ans_cnt += kmismatch(sr,bwt,sml,occ,psa,kerr2,
-                 lst-1,sp2,ep2,ans,new_ans_cnt,ans_size,genome_size,sample_size);
-    }
-
-    // for t
-    sp2 = sml[alpha_rank('t')] + 1 +
-        get_occ(bwt,occ,genome_size,sample_size,sp-1,'t');
-    ep2 = sml[alpha_rank('t')] +
-        get_occ(bwt,occ,genome_size,sample_size,ep,'t');
-    if(get_bp_2bit(sr, lst) != 't')
-        kerr2 = kerr - 1;
-    else
-        kerr2 = kerr;
-    if(kerr2 >= 0)
-    {
-        new_ans_cnt += kmismatch(sr,bwt,sml,occ,psa,kerr2,
-                 lst-1,sp2,ep2,ans,new_ans_cnt,ans_size,genome_size,sample_size);
+        sp2 = sml[alpha_rank(alphabet[i])] + 1 +
+            get_occ(bwt,occ,genome_size,sample_size,(long long int)sp-1,alphabet[i]);
+        ep2 = sml[alpha_rank(alphabet[i])] +
+            get_occ(bwt,occ,genome_size,sample_size,ep,alphabet[i]);
+        if(get_bp_2bit(sr, lst) != alphabet[i])
+            kerr2 = kerr - 1;
+        else
+            kerr2 = kerr;
+        if(kerr2 >= 0)
+        {
+            new_ans_cnt += kmismatch(sr,bwt,sml,occ,psa,kerr2,
+                             lst-1,sp2,ep2,ans,new_ans_cnt,ans_size,genome_size,
+                             sample_size,alphabet);
+        }
     }
 
     return new_ans_cnt;

@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
         unsigned int* all_ans = (unsigned int*)
                         malloc(ans_size*read_num*sizeof(unsigned int));
         memset(all_ans, -1, ans_size*read_num*sizeof(unsigned int));
-        unsigned int kerr = K_ERR;
+        unsigned int kerr = 0;
       
         search(bwt,genome_size,sr,psa,read_num,read_size,sml,occ,sample_size,
             all_ans,ans_size,kerr);
