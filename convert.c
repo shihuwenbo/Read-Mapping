@@ -80,15 +80,13 @@ int main(int argc, char* argv[])
             size_t dst_size = (num * 2 - 1)/8 + 1;
             dst = (char*) malloc(dst_size*sizeof(char));
             memset(dst, 0, dst_size*sizeof(char));
-            for(unsigned int i = 0; i < num; i++)
+            for(unsigned int i = 0, j = 0; i < num; i++)
             {
                 char bp = get_bp_3bit(src, i);
                 if(bp == '$')
-                {
                     printf("$ is at: %d\n", i);
-                    i--;
-                }
-                write_bp_2bit(dst, i, bp);
+                write_bp_2bit(dst, j, bp);
+                j++;
             }
             char rev_fn[100];
             memset(rev_fn, 0, 100);

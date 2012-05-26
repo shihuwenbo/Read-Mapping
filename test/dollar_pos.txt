@@ -1,0 +1,2 @@
+genome_3bit_bwt: 5777
+genome_3bit_rev_bwt_2bit: 14691
