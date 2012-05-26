@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 // start timer
 void start_timer(double* time)
@@ -215,11 +216,11 @@ void write_bp_3bit(char* genome, unsigned int pos, char val)
 }
 
 // read the file named file_name into the memory
-void read_file(char* file_name, char** genome)
+size_t read_file(char* file_name, char** genome)
 {
     FILE* file = fopen(file_name, "r");
     fseek(file, SEEK_SET, SEEK_END);
-    unsigned int len = ftell(file);
+    size_t len = ftell(file);
     rewind(file);
     (*genome) = (char*) malloc(len);
     if(fread(*genome, sizeof(char), len, file) != len)
@@ -228,10 +229,11 @@ void read_file(char* file_name, char** genome)
        exit(1);
     }
     fclose(file);
+    return (size_t) len;
 }
 
 // write memory to disk saved in file_name
-void write_file(char* file_name, char* genome, int file_size)
+void write_file(char* file_name, char* genome, size_t file_size)
 {
     FILE* genome_file = fopen(file_name, "wb");
     fwrite(genome, sizeof(char), file_size, genome_file);
@@ -251,17 +253,32 @@ void create_select_table(char* bitvect, unsigned int len, char** dir1,
     unsigned int blksz = (unsigned int) (ceil(log((double)len)/log(2.0)) *
                             ceil(log(log((double)len)/log(2.0))/log(2.0)));
 
-    // number of entries for first level directory
+    // initialize first directory
     unsigned int nent1 = (unsigned int) floor(((double)len)/((double)blksz));
-
-    // number of bits to represent an entry
-    //unsigned int entsz1 = (unsigned int) (ceil(log((double)len)/log(2.0)));
-
-    // initialize first level directory
-    (*dir2) = (char*) malloc(nent1*sizeof(char));
-    for(unsigned int i = blksz - 1; i < len; i += blksz)
+    unsigned int entsz1 = (unsigned int) (ceil(log((double)len)/log(2.0)));
+    unsigned int dirsz1 = (nent1*entsz1-1)/BYTE_SIZE + 1;
+    (*dir1) = (char*) malloc(dirsz1*sizeof(char));
+    for(unsigned int i = 0; i < nent1; i++)
+        write_int(*dir1, entsz1, i, 0);
+    
+    // generate the first directory
+    int bitcnt = 0, diriter = 0;
+    for(unsigned int i = 0; i < len; i++)
     {
+        if(get_bit(bitvect, i) == 1)
+        {
+            bitcnt++;
+            if(bitcnt % blksz == 0)
+            {
+                printf("i: %d\n", i);
+                write_int(*dir1, entsz1, diriter, i);
+                diriter++;
+            }
+        }
     }
+
+    // check if need to generate second directory
+
 }
 
 // return the integer at a position
@@ -303,4 +320,39 @@ void write_int(char* intary, unsigned int intsz,
         else
             clear_bit(intary, bit_pos - i);
     }
+}
+
+// compute bwt based on the original file and the sa
+char* compute_bwt_3bit(char* genome, unsigned int* sa,
+     unsigned int genome_size, unsigned int file_size)
+{
+    char* bwt = (char*) malloc(file_size*sizeof(char));
+    memset(bwt, 0, file_size*sizeof(char));
+    for(unsigned int i = 0; i < genome_size; i++)
+    {
+        unsigned int pos = (unsigned int)
+                        ((((unsigned long long int) (sa[i])) +
+                        ((unsigned long long int) (genome_size-1))) %
+                        ((unsigned long long int) genome_size));
+        char bp = get_bp_3bit(genome, pos);
+        write_bp_3bit(bwt, i, bp);
+    }
+    return bwt;
+}
+
+// compute partial suffix array
+unsigned int* compute_partial_sa(unsigned int* sa,
+        unsigned int genome_size, unsigned int sample_size)
+{
+    unsigned int *sa_pt = (unsigned int*)
+                malloc((genome_size/sample_size)*sizeof(unsigned int));
+    for(unsigned int i = 0, j = 0; i < genome_size; i++)
+    {
+        if(i % sample_size == 0)
+        {
+            sa_pt[i] = sa[i];
+            j++;
+        }
+    }
+    return sa_pt;
 }

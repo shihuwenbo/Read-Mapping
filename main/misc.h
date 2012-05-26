@@ -3,6 +3,8 @@
 #define ENCODE_SIZE_3BIT ((unsigned long long int) 3)
 #define BYTE_SIZE ((unsigned long long int) 8)
 #define INT_SIZE ((unsigned int) 32)
+#define SAMPLE_SIZE ((unsigned long long int) 40)
+#include <stdlib.h>
 
 // star timer
 void start_timer(double* time);
@@ -38,10 +40,10 @@ void write_bp_2bit(char* genome, unsigned int pos, char val);
 void write_bp_3bit(char* genome, unsigned int pos, char val);
 
 // open the file named file_name and read it into memory
-void read_file(char* file_name, char** genome);
+size_t read_file(char* file_name, char** genome);
 
 // write memory to disk saved in file_name
-void write_file(char* file_name, char* genome, int encode_size);
+void write_file(char* file_name, char* genome, size_t encode_size);
 
 // create the data structure that supports O(1) select operation
 void create_select_table(char* bitvect, unsigned int len, char** dir1,
@@ -56,3 +58,11 @@ unsigned int get_int(char* intary, unsigned int intsz, unsigned int pos);
 // write a integer at a position
 void write_int(char* intary, unsigned int intsz,
                 unsigned int pos, unsigned int val);
+
+// compute bwt based on the original file and the sa
+char* compute_bwt_3bit(char* genome, unsigned int* sa,
+    unsigned int genome_size, unsigned int file_size);
+
+// compute partial suffix array
+unsigned int* compute_partial_sa(unsigned int* sa,
+        unsigned int genome_size, unsigned int sample_size);
