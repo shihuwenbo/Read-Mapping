@@ -1,4 +1,4 @@
-#define ALPHA_SIZE 4
+#define ALPHA_SIZE ((unsigned long long int) 4)
 #define GENOME_SIZE ((unsigned long long int) 3000000000u)
 #define ENCODE_SIZE_2BIT ((unsigned long long int) 2)
 #define ENCODE_SIZE_3BIT ((unsigned long long int) 3)
@@ -10,7 +10,7 @@
 #define READ_NUM ((unsigned long long int) 100)
 #define READ_SIZE ((unsigned long long int) 30)
 #define ANS_SIZE ((unsigned long long int) 5)
-#define K_ERR ((unsigned long long int) 2)
+#define K_ERR ((int) 2)
 
 #include <stdlib.h>
 
