@@ -91,10 +91,8 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
         ep = sml[alpha_rank(bp)] +
              get_occ(bwt,occ,genome_size,sample_size,(long long int)ep,bp);
     }
-    if(sp > ep)
-        printf("not found...\n");
-    else
-        printf("found at %u\n", psa[sp-1]);
+    if(sp <= ep)
+        ans[0] = get_sa_val(bwt,sml,occ,psa,genome_size,sample_size,sp-1);
     return 0;
     */
 
