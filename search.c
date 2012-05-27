@@ -13,13 +13,11 @@ void search(char* bwt, unsigned int genome_size, char* sr, unsigned int* psa,
     const char alphabet[] = "acgt";
     for(unsigned int i = 0; i < read_num; i++)
     {
-        printf("read #%d: ", i);
         unsigned int* ans_ptr = all_ans + i * ans_size;
         unsigned int rs = i*read_size;
         unsigned int re = (i + 1) * read_size - 1;
         kmismatch(sr,bwt,sml,occ,psa,kerr,rs,re,0,genome_size-1,ans_ptr,
             0,ans_size,genome_size,spsize,alphabet);
-        printf("\n");
     }
 }
 
@@ -46,7 +44,13 @@ unsigned int get_occ(char* bwt, unsigned int* occ, unsigned int genome_size,
     for(unsigned int i = occ_off * sample_size + 1;
         i < pos && i < genome_size; i++)
     {
-        char bp = get_bp_3bit(bwt, i);
+        char bp = '*';
+        if(i < BWT_DPOS)
+            bp = get_bp_2bit(bwt, i);
+        else if(i == BWT_DPOS)
+            bp = '$';
+        else
+            bp = get_bp_2bit(bwt, i-1);
         if(bp == alpha)
             ext_cnt++;
     }
@@ -55,7 +59,14 @@ unsigned int get_occ(char* bwt, unsigned int* occ, unsigned int genome_size,
 
     if(pos % sample_size == 0)
     {
-        if(get_bp_3bit(bwt, pos) == alpha)
+        char bp = '*';
+        if(pos < BWT_DPOS)
+            bp = get_bp_2bit(bwt, pos);
+        else if(pos == BWT_DPOS)
+            bp = '$';
+        else
+            bp = get_bp_2bit(bwt, pos-1);
+        if(bp == alpha)
             occi--;
         if(occi < 0)
             occi = 0;
@@ -87,14 +98,21 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
     return 0;
     */
 
-    if(sp > ep)
+    if(sp > ep && ans_cnt < ans_size)
         return 0;
     if(re <= rs)
     {
-        for(unsigned int i = sp - 1; i <= ep - 1; i++)
-            printf("%u ", psa[i]);
-        return 0;
+        unsigned int cnt = 0;
+        for(unsigned int i = sp - 1, j = ans_cnt; 
+            i <= ep - 1 && j < ans_size; i++, j++)
+        {
+            ans[j] = psa[i];
+            cnt++;
+        }
+        return cnt;
     }
+
+    unsigned int new_ans_cnt = ans_cnt;
     for(unsigned int i = 0; i < ALPHA_SIZE; i++)
     {
         unsigned int sp2 = sml[alpha_rank(alphabet[i])] + 1 +
@@ -111,9 +129,10 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
             kerr2 = kerr;
         if(kerr2 >= 0)
         {
-            kmismatch(sr,bwt,sml,occ,psa,kerr2,rs,re-1,sp2,ep2,ans,ans_cnt,
-                        ans_size,genome_size,sample_size,alphabet);
+            new_ans_cnt += kmismatch(sr,bwt,sml,occ,psa,kerr2,rs,re-1,sp2,
+                        ep2,ans,new_ans_cnt,ans_size,genome_size,
+                        sample_size,alphabet);
         }
     }
-    return 0;
+    return new_ans_cnt;
 }

@@ -35,15 +35,15 @@ int main(int argc, char* argv[])
             read_num = READ_NUM;
         }
 
-        unsigned int ans_size = 10;
+        unsigned int ans_size = 5;
         unsigned int* all_ans = (unsigned int*)
                         malloc(ans_size*read_num*sizeof(unsigned int));
         memset(all_ans, -1, ans_size*read_num*sizeof(unsigned int));
         int kerr = 2;
         search(bwt,genome_size,sr,psa,read_num,read_size,sml,occ,sample_size,
             all_ans,ans_size,kerr);
-        /*
-        for(unsigned int i = 0; i < 2; i++)
+        
+        for(unsigned int i = 0; i < read_num; i++)
         {
             printf("read #%u: ", i);
             unsigned int* ptr = &all_ans[i*ans_size];
@@ -61,7 +61,6 @@ int main(int argc, char* argv[])
             }
             printf("\n");
         }
-        */
 
         free(bwt);
         free(smlc);
