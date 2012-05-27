@@ -308,7 +308,7 @@ unsigned int* compute_partial_sa(unsigned int* sa,
     {
         if(i % sample_size == 0)
         {
-            sa_pt[i] = sa[i];
+            sa_pt[j] = sa[i];
             j++;
         }
     }

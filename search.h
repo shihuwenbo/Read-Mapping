@@ -18,3 +18,8 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
         unsigned int* ans, unsigned int ans_cnt, unsigned int ans_size,
         unsigned int genome_size, unsigned int sample_size,
         const char *alphabet);
+
+// get suffix array value
+unsigned int get_sa_val(char* bwt, unsigned int*sml, unsigned int* occ,
+        unsigned int*psa, unsigned int genome_size, unsigned int sample_size,
+        unsigned int pos);

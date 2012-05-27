@@ -106,7 +106,7 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
         for(unsigned int i = sp - 1, j = ans_cnt; 
             i <= ep - 1 && j < ans_size; i++, j++)
         {
-            ans[j] = psa[i] - 1;
+            ans[j] = get_sa_val(bwt,sml,occ,psa,genome_size,sample_size,i)-1;
             cnt++;
         }
         return cnt;
@@ -135,4 +135,34 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
         }
     }
     return new_ans_cnt;
+}
+
+// get suffix array value
+unsigned int get_sa_val(char* bwt, unsigned int*sml, unsigned int* occ,
+        unsigned int*psa, unsigned int genome_size, unsigned int sample_size,
+        unsigned int pos)
+{
+    unsigned int nmov = 0;
+    int lucky = 0;
+    while(pos != BWT_DPOS)
+    {
+        if(pos % sample_size == 0)
+        {
+            lucky = 1;
+            break;
+        }
+        char bp = '*';
+        if(pos < BWT_DPOS)
+            bp = get_bp_2bit(bwt, pos);
+        else if(pos == BWT_DPOS)
+            bp = '$';
+        else
+            bp = get_bp_2bit(bwt, pos-1);
+        pos = sml[alpha_rank(bp)] + 
+            get_occ(bwt,occ,genome_size,sample_size,(long long int)pos,bp);
+        nmov++;
+    }
+    if(lucky)
+        nmov += psa[pos/sample_size];
+    return nmov;
 }
