@@ -76,7 +76,7 @@ int* ss_mm_8bit(char* str, int len)
     // compute offset of each letter
     int offset[ALPHA_SIZE + 1];
     offset[0] = 0;
-    for(int i = 1; i < ALPHA_SIZE + 1; i++)
+    for(unsigned int i = 1; i < ALPHA_SIZE + 1; i++)
         offset[i] = offset[i-1] + bin[i-1];
 
     // use the offset to compute the first stage suffix array

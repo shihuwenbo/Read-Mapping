@@ -1,10 +1,24 @@
+CXX = g++
 CC = gcc
-CCFLAG = -Wall -Werror -O3 -std=c99 -lm
+NVCC = nvcc
+NVOPTS = -arch sm_20 -O3
+CULIBS = -L/u/local/cuda/current/lib64 -lcuda -lcudart
+CCFLAG = -Wall -Werror -O3 -std=c99
+CXXFLAG = -Wall -Werror -O3
 SUFSORT_OBJ = sufsort.o misc.o suffix_sort.o
 GENTEST_OBJ = misc.o gentest.o
-BINARY = sufsort gentest convert fmidx map
+BINARY = sufsort gentest convert fmidx map gpumap
 
 all: $(BINARY)
+
+gpumap: gpusearch.o gpumap.o
+	$(CXX) $(CULIBS) $(CXXFLAG) gpusearch.o gpumap.o -o gpumap
+
+gpumap.o: gpumap.cpp
+	$(CXX) $(CXXFLAG) -c gpumap.cpp
+
+gpusearch.o: gpusearch.cu gpusearch.h
+	$(NVCC) $(NVOPTS) -c gpusearch.cu -I/usr/local/cuda/include
 
 map: search.o map.o misc.o
 	$(CC) map.o search.o misc.o $(CCFLAG) -o map

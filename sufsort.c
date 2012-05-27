@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 {
     if(argc == 1)
     {
-        char *input = "$gacgcgatc";
+        char input[] = "$gacgcgatc";
         unsigned int len = strlen(input);
         char* input_3bit = (char*) malloc(len*sizeof(int));
         for(unsigned int i = 0; i < len; i++)
