@@ -15,12 +15,16 @@ int main(int argc, char* argv[])
     }
     else
     {
+        double ldtime = 0.0, sctime = 0.0;
         char *bwt, *sr, *smlc, *occc, *psac;
+
+        start_timer(&ldtime);
         read_file(argv[1], &bwt);
         read_file(argv[2], &sr);
         read_file(argv[3], &smlc);
         read_file(argv[4], &occc);
         read_file(argv[5], &psac);
+        stop_timer(&ldtime);
 
         unsigned int* sml = (unsigned int*) smlc;
         unsigned int* occ = (unsigned int*) occc;
@@ -40,8 +44,11 @@ int main(int argc, char* argv[])
                         malloc(ans_size*read_num*sizeof(unsigned int));
         memset(all_ans, -1, ans_size*read_num*sizeof(unsigned int));
         int kerr = 2;
+
+        start_timer(&sctime);
         search(bwt,genome_size,sr,psa,read_num,read_size,sml,occ,sample_size,
             all_ans,ans_size,kerr);
+        stop_timer(&sctime);
         
         for(unsigned int i = 0; i < read_num; i++)
         {
@@ -61,6 +68,9 @@ int main(int argc, char* argv[])
             }
             printf("\n");
         }
+
+        printf("Load time: %f sec\n", ldtime);
+        printf("Search time: %f sec\n", sctime);
 
         free(bwt);
         free(smlc);
