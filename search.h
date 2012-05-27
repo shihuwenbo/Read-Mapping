@@ -12,7 +12,7 @@ unsigned int get_occ(char* bwt, unsigned int* occ, unsigned int genome_size,
 
 
 // k-mismatch search
-unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
+unsigned int kmismatch_recur(char* sr, char* bwt, unsigned int* sml,
         unsigned int* occ, unsigned int* psa, int kerr,
         unsigned int rs, unsigned int re, unsigned int sp, unsigned int ep,
         unsigned int* ans, unsigned int ans_cnt, unsigned int ans_size,

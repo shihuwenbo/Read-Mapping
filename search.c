@@ -16,7 +16,7 @@ void search(char* bwt, unsigned int genome_size, char* sr, unsigned int* psa,
         unsigned int* ans_ptr = all_ans + i * ans_size;
         unsigned int rs = i*read_size;
         unsigned int re = (i + 1) * read_size - 1;
-        kmismatch(sr,bwt,sml,occ,psa,kerr,rs,re,0,genome_size-1,ans_ptr,
+        kmismatch_recur(sr,bwt,sml,occ,psa,kerr,rs,re,0,genome_size-1,ans_ptr,
             0,ans_size,genome_size,spsize,alphabet);
     }
 }
@@ -75,7 +75,7 @@ unsigned int get_occ(char* bwt, unsigned int* occ, unsigned int genome_size,
 }
 
 // k-mismatch search
-unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
+unsigned int kmismatch_recur(char* sr, char* bwt, unsigned int* sml,
         unsigned int* occ, unsigned int* psa, int kerr,
         unsigned int rs, unsigned int re, unsigned int sp, unsigned int ep,
         unsigned int* ans, unsigned int ans_cnt, unsigned int ans_size,
@@ -127,7 +127,7 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
             kerr2 = kerr;
         if(kerr2 >= 0)
         {
-            new_ans_cnt += kmismatch(sr,bwt,sml,occ,psa,kerr2,rs,re-1,sp2,
+            new_ans_cnt += kmismatch_recur(sr,bwt,sml,occ,psa,kerr2,rs,re-1,sp2,
                         ep2,ans,new_ans_cnt,ans_size,genome_size,
                         sample_size,alphabet);
         }
