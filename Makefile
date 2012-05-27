@@ -73,5 +73,6 @@ tarball:
 	cp *.h *.c Makefile read_mapping
 	tar -pcvf read_mapping.tar.gz read_mapping/
 	rm -rf read_mapping/
+
 crun:
 	./map test/genome_3bit_bwt_2bit test/short_read_2bit test/genome_3bit_bwt_sml test/genome_3bit_bwt_occ test/genome_3bit_psa f
