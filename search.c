@@ -106,7 +106,7 @@ unsigned int kmismatch(char* sr, char* bwt, unsigned int* sml,
         for(unsigned int i = sp - 1, j = ans_cnt; 
             i <= ep - 1 && j < ans_size; i++, j++)
         {
-            ans[j] = psa[i];
+            ans[j] = psa[i] - 1;
             cnt++;
         }
         return cnt;
