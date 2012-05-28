@@ -46,12 +46,11 @@ int main(int argc, char* argv[])
         unsigned int* sml = (unsigned int*) smlc;
         unsigned int* occ = (unsigned int*) occc;
         unsigned int* psa = (unsigned int*) psac;
-        unsigned int ans_size = 5;
 
         // assign space for answer
         unsigned int* all_ans = (unsigned int*)
-                        malloc(ans_size*read_num*sizeof(unsigned int));
-        memset(all_ans, -1, ans_size*read_num*sizeof(unsigned int));
+                        malloc(read_num*sizeof(unsigned int));
+        memset(all_ans, -1, read_num*sizeof(unsigned int));
 
         // initialize gpu memory
         char *gbwt, *gsr;
@@ -61,7 +60,7 @@ int main(int argc, char* argv[])
         gmalloc((char**)&gsml, sml_sz);
         gmalloc((char**)&gocc, occ_sz);
         gmalloc((char**)&gpsa, psa_sz);
-        gmalloc((char**)&gall_ans, ans_size*read_num*sizeof(unsigned int));
+        gmalloc((char**)&gall_ans, read_num*sizeof(unsigned int));
 
         // copy memory from host to device
         start_timer(&mcptimehd);
@@ -70,39 +69,27 @@ int main(int argc, char* argv[])
         gmemcpy_htod((char*)gsml, (char*)sml, sml_sz*sizeof(char));
         gmemcpy_htod((char*)gocc, (char*)occ, occ_sz*sizeof(char));
         gmemcpy_htod((char*)gpsa, (char*)psa, psa_sz*sizeof(char));
-        gmemcpy_htod((char*)gall_ans, (char*)all_ans,
-            ans_size*read_num*sizeof(unsigned int));
+        gmemcpy_htod((char*)gall_ans, (char*)all_ans, read_num*sizeof(unsigned int));
         stop_timer(&mcptimehd);
 
         // run the search using gpu
         int kerr = K_ERR;
+        set_cache_size(2);
+        set_stack_size(2200);
         start_timer(&sctime);
-        gpu_search(gbwt,genome_size,gsr,gpsa,read_num,read_size,gsml,gocc,sample_size,
-            gall_ans,ans_size,kerr);
+        gpu_search(gbwt,gsr,gpsa,read_num,read_size,gsml,gocc,gall_ans,kerr);
         stop_timer(&sctime);
 
         // copy answer back to host
         start_timer(&mcptimedh);
-        gmemcpy_dtoh((char*)all_ans, (char*)gall_ans, 
-               ans_size*read_num*sizeof(unsigned int));
+        gmemcpy_dtoh((char*)all_ans, (char*)gall_ans, read_num*sizeof(unsigned int));
         stop_timer(&mcptimedh);
         
         for(unsigned int i = 0; i < read_num; i++)
         {
             printf("read #%u: ", i);
-            unsigned int* ptr = &all_ans[i*ans_size];
-            for(unsigned int j = 0; j < ans_size; j++)
-            {
-                if((int)ptr[j] != -1)
-                {
-                    if(j == ans_size - 1 || (int)ptr[j+1] == -1)
-                        printf("%u", ptr[j]);
-                    else
-                        printf("%u, ", ptr[j]);
-                }
-                else
-                    break;
-            }
+            if((int)all_ans[i] != -1)
+                printf("%u", all_ans[i]);
             printf("\n");
         }
 

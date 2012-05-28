@@ -7,14 +7,13 @@
 
 #define GENOME_SIZE_TEST ((unsigned long long int) 30001)
 #define SAMPLE_SIZE_TEST ((unsigned long long int) 10)
-#define READ_SIZE ((unsigned long long int) 30)
 
 static cudaError_t crc;
-int nblock_size = 4;
+int nblock_size = 1;
 int maxgsx = 65535;
 
-__device__ char *kmbwt, *kmsr;
-__device__ unsigned int *kmocc, *kmpsa, *kmsml;
+__device__ char* kmbwt;
+__device__ unsigned int *kmocc, *kmpsa;
 
 // given a letter, return its rank in the alphabet
 __device__
@@ -34,7 +33,7 @@ unsigned int alpha_rank(char l)
 
 // get the bp at pos
 __device__
-char gpu_get_bp_2bit(char* genome, unsigned int pos)
+char gpu_get_bp_2bit(const char* genome, unsigned int pos)
 {
     unsigned long long int bit_pos = pos * ENCODE_SIZE_2BIT;
     unsigned long long int byte_pos = bit_pos / BYTE_SIZE;
@@ -91,7 +90,8 @@ void gpu_write_bp_2bit(char* genome, unsigned int pos, char val)
 
 // given a bwt and a partial occ array, find the actual occ value
 __device__
-unsigned int gpu_get_occ(long long int pos, char alpha)
+unsigned int gpu_get_occ(const char* bwt, const unsigned int* occ,
+                        long long int pos, char alpha)
 {
     if(pos < 0)
         return 0;
@@ -101,10 +101,10 @@ unsigned int gpu_get_occ(long long int pos, char alpha)
     long long int occi = 0;
     switch(alpha)
     {
-        case 'a': occi = kmocc[occ_off*ALPHA_SIZE+0]; break;
-        case 'c': occi = kmocc[occ_off*ALPHA_SIZE+1]; break;
-        case 'g': occi = kmocc[occ_off*ALPHA_SIZE+2]; break;
-        case 't': occi = kmocc[occ_off*ALPHA_SIZE+3]; break;
+        case 'a': occi = occ[occ_off*ALPHA_SIZE+0]; break;
+        case 'c': occi = occ[occ_off*ALPHA_SIZE+1]; break;
+        case 'g': occi = occ[occ_off*ALPHA_SIZE+2]; break;
+        case 't': occi = occ[occ_off*ALPHA_SIZE+3]; break;
     }
 
     unsigned int ext_cnt = 0;
@@ -113,11 +113,11 @@ unsigned int gpu_get_occ(long long int pos, char alpha)
     {
         char bp = '*';
         if(i < BWT_DPOS)
-            bp = gpu_get_bp_2bit(kmbwt, i);
+            bp = gpu_get_bp_2bit(bwt, i);
         else if(i == BWT_DPOS)
             bp = '$';
         else
-            bp = gpu_get_bp_2bit(kmbwt, i-1);
+            bp = gpu_get_bp_2bit(bwt, i-1);
         if(bp == alpha)
             ext_cnt++;
     }
@@ -128,11 +128,11 @@ unsigned int gpu_get_occ(long long int pos, char alpha)
     {
         char bp = '*';
         if(pos < BWT_DPOS)
-            bp = gpu_get_bp_2bit(kmbwt, pos);
+            bp = gpu_get_bp_2bit(bwt, pos);
         else if(pos == BWT_DPOS)
             bp = '$';
         else
-            bp = gpu_get_bp_2bit(kmbwt, pos-1);
+            bp = gpu_get_bp_2bit(bwt, pos-1);
         if(bp == alpha)
             occi--;
         if(occi < 0)
@@ -143,7 +143,8 @@ unsigned int gpu_get_occ(long long int pos, char alpha)
 
 // get suffix array value
 __device__
-unsigned int gpu_get_sa_val(unsigned int pos)
+unsigned int gpu_get_sa_val(const char* bwt, const unsigned int*sml, const unsigned int* occ,
+                              const unsigned int*psa, unsigned int pos)
 {
     unsigned int nmov = 0;
     int lucky = 0;
@@ -156,24 +157,25 @@ unsigned int gpu_get_sa_val(unsigned int pos)
         }
         char bp = '*';
         if(pos < BWT_DPOS)
-            bp = gpu_get_bp_2bit(kmbwt, pos);
+            bp = gpu_get_bp_2bit(bwt, pos);
         else if(pos == BWT_DPOS)
             bp = '$';
         else
-            bp = gpu_get_bp_2bit(kmbwt, pos-1);
-        pos = kmsml[alpha_rank(bp)] + 
-            gpu_get_occ((long long int)pos,bp);
+            bp = gpu_get_bp_2bit(bwt, pos-1);
+        pos = sml[alpha_rank(bp)] + 
+            gpu_get_occ(bwt,occ,(long long int)pos,bp);
         nmov++;
     }
     if(lucky)
-        nmov += kmpsa[pos/SAMPLE_SIZE_TEST];
+        nmov += psa[pos/SAMPLE_SIZE_TEST];
     return nmov;
 }
 
 // k-mismatch search
 __device__
-void gpu_kmismatch(int kerr,unsigned int re, unsigned int sp, unsigned int ep,
-                   unsigned int* ans)
+void gpu_kmismatch(const char* sr,const unsigned int* sml, int kerr,
+        unsigned int rs, unsigned int re, unsigned int sp, unsigned int ep,
+        unsigned int* ans)
 {
     /*
     for(long long int i = re; i >= (long long int)rs && ep >= sp; i--)
@@ -190,57 +192,56 @@ void gpu_kmismatch(int kerr,unsigned int re, unsigned int sp, unsigned int ep,
     */
     if(sp > ep)
         return;
-
-    if(re % READ_SIZE == 0)
+    if(re <= rs)
     {
-        ans[0] = gpu_get_sa_val(sp-1)-1;
+        ans[0] = gpu_get_sa_val(kmbwt,sml,kmocc,kmpsa,sp-1)-1;
         return;
     }
 
-    unsigned int sp2 = kmsml[alpha_rank('a')] + 1 +
-        gpu_get_occ((long long int)sp-1,'a');
-    unsigned int ep2 = kmsml[alpha_rank('a')] +
-        gpu_get_occ((long long int)ep,'a');
+    unsigned int sp2 = sml[alpha_rank('a')] + 1 +
+        gpu_get_occ(kmbwt,kmocc,(long long int)sp-1,'a');
+    unsigned int ep2 = sml[alpha_rank('a')] +
+        gpu_get_occ(kmbwt,kmocc,(long long int)ep,'a');
     int kerr2 = 0;
-    if(gpu_get_bp_2bit(kmsr, re) != 'a')
+    if(gpu_get_bp_2bit(sr, re) != 'a')
         kerr2 = kerr - 1;
     else
         kerr2 = kerr;
     if(kerr2 >= 0)
-        gpu_kmismatch(kerr2,re-1,sp2,ep2,ans);
+        gpu_kmismatch(sr,sml,kerr2,rs,re-1,sp2,ep2,ans);
 
-    sp2 = kmsml[alpha_rank('c')] + 1 +
-        gpu_get_occ((long long int)sp-1,'c');
-    ep2 = kmsml[alpha_rank('c')] +
-        gpu_get_occ((long long int)ep,'c');
-    if(gpu_get_bp_2bit(kmsr, re) != 'c')
+    sp2 = sml[alpha_rank('c')] + 1 +
+        gpu_get_occ(kmbwt,kmocc,(long long int)sp-1,'c');
+    ep2 = sml[alpha_rank('c')] +
+        gpu_get_occ(kmbwt,kmocc,(long long int)ep,'c');
+    if(gpu_get_bp_2bit(sr, re) != 'c')
         kerr2 = kerr - 1;
     else
         kerr2 = kerr;
     if(kerr2 >= 0)
-        gpu_kmismatch(kerr2,re-1,sp2,ep2,ans);
+        gpu_kmismatch(sr,sml,kerr2,rs,re-1,sp2,ep2,ans);
 
-    sp2 = kmsml[alpha_rank('g')] + 1 +
-        gpu_get_occ((long long int)sp-1,'g');
-    ep2 = kmsml[alpha_rank('g')] +
-        gpu_get_occ((long long int)ep,'g');
-    if(gpu_get_bp_2bit(kmsr, re) != 'g')
+    sp2 = sml[alpha_rank('g')] + 1 +
+        gpu_get_occ(kmbwt,kmocc,(long long int)sp-1,'g');
+    ep2 = sml[alpha_rank('g')] +
+        gpu_get_occ(kmbwt,kmocc,(long long int)ep,'g');
+    if(gpu_get_bp_2bit(sr, re) != 'g')
         kerr2 = kerr - 1;
     else
         kerr2 = kerr;
     if(kerr2 >= 0)
-        gpu_kmismatch(kerr2,re-1,sp2,ep2,ans);
+        gpu_kmismatch(sr,sml,kerr2,rs,re-1,sp2,ep2,ans);
 
-    sp2 = kmsml[alpha_rank('t')] + 1 +
-        gpu_get_occ((long long int)sp-1,'t');
-    ep2 = kmsml[alpha_rank('t')] +
-        gpu_get_occ((long long int)ep,'t');
-    if(gpu_get_bp_2bit(kmsr, re) != 't')
+    sp2 = sml[alpha_rank('t')] + 1 +
+        gpu_get_occ(kmbwt,kmocc,(long long int)sp-1,'t');
+    ep2 = sml[alpha_rank('t')] +
+        gpu_get_occ(kmbwt,kmocc,(long long int)ep,'t');
+    if(gpu_get_bp_2bit(sr, re) != 't')
         kerr2 = kerr - 1;
     else
         kerr2 = kerr;
     if(kerr2 >= 0)
-        gpu_kmismatch(kerr2,re-1,sp2,ep2,ans);
+        gpu_kmismatch(sr,sml,kerr2,rs,re-1,sp2,ep2,ans);
 
     return;
 }
@@ -256,14 +257,30 @@ void search_kernel(char* bwt, char* sr, unsigned int* psa,
     kmbwt = bwt;
     kmocc = occ;
     kmpsa = psa;
-    kmsr = sr;
-    kmsml = sml;
     unsigned int i = (blockIdx.y*gridDim.x+blockIdx.x)*blockDim.x+threadIdx.x;
+    
     if(i < read_num)
     {
+        __shared__ unsigned int ssml[ALPHA_SIZE+1];
+        for(unsigned int j = 0; j < ALPHA_SIZE+1; j++)
+            ssml[j] = sml[j];
+
+        extern __shared__ char ssr[];
+        unsigned int ns = (blockDim.x*read_size*ENCODE_SIZE_2BIT-1)/BYTE_SIZE+1;
+        for(unsigned int j = threadIdx.x; j < ns; j += blockDim.x)
+            ssr[j] = 0;
+        __syncthreads();
+        for(unsigned int j = 0; j < read_size; j++)
+        {
+            char bp = gpu_get_bp_2bit(sr, j+i*read_size);
+            gpu_write_bp_2bit(ssr, j+threadIdx.x*read_size, bp);
+        }
+        __syncthreads();
+
         unsigned int* ans_ptr = all_ans + i;
-        unsigned int re = (i+1)*read_size-1;
-        gpu_kmismatch(kerr,re,0,GENOME_SIZE_TEST-1,ans_ptr);
+        unsigned int rs = threadIdx.x*read_size;
+        unsigned int re = (threadIdx.x+1)*read_size-1;
+        gpu_kmismatch(ssr,ssml,kerr,rs,re,0,GENOME_SIZE_TEST-1,ans_ptr);
     }
 }
 
@@ -279,7 +296,8 @@ extern "C++" void gpu_search(char* bwt, char* sr, unsigned int* psa,
     x_size = x_size < maxgsx ? x_size : maxgsx;
     dim3 dimGrid(x_size, y_size);
     crc = cudaGetLastError();
-    search_kernel<<<dimGrid, dimBlock>>>(bwt,sr,psa,read_num,read_size,
+    unsigned int ns = (nblock_size*read_size*ENCODE_SIZE_2BIT-1)/BYTE_SIZE+1;
+    search_kernel<<<dimGrid, dimBlock, ns>>>(bwt,sr,psa,read_num,read_size,
          sml,occ,all_ans,kerr);
     cudaThreadSynchronize();
     crc = cudaGetLastError();
@@ -317,21 +335,6 @@ extern "C++" void gfree(char* src)
 
 extern "C++" void set_stack_size(size_t size)
 {
-   cudaThreadSetLimit(cudaLimitStackSize, size); 
-   return;
-}
-
-extern "C++" void set_cache_size(int nscache)
-{
-   cudaFuncCache cpref;
-   if ((nscache < 0) || (nscache > 2))
-      return;
-   if (nscache==0)
-      cpref = cudaFuncCachePreferNone;
-   else if (nscache==1)
-      cpref = cudaFuncCachePreferShared;
-   else if (nscache==2)
-      cpref = cudaFuncCachePreferL1;
-   cudaThreadSetCacheConfig(cpref);
+   cuCtxSetLimit(CU_LIMIT_STACK_SIZE, size); 
    return;
 }
