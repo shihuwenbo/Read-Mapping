@@ -76,7 +76,7 @@ int* ss_mm_8bit(char* str, int len)
     // compute offset of each letter
     int offset[ALPHA_SIZE + 1];
     offset[0] = 0;
-    for(unsigned int i = 1; i < ALPHA_SIZE + 1; i++)
+    for(int i = 1; i < ALPHA_SIZE + 1; i++)
         offset[i] = offset[i-1] + bin[i-1];
 
     // use the offset to compute the first stage suffix array
@@ -372,6 +372,8 @@ unsigned int* ss_mm_3bit(char* str, unsigned int len)
                 num_bin++;
         }
 
+        printf("Bin: %u\n", (unsigned int)num_bin);
+
         // done if all the suffixes live in separate bins
         if(num_bin == len)
             break;
@@ -522,4 +524,3 @@ unsigned int* ss_mm_3bit(char* str, unsigned int len)
 
     return pos;
 }
-

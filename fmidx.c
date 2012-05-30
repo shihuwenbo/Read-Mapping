@@ -4,9 +4,9 @@
 
 int main(int argc, char* argv[])
 {
-    if(argc != 4)
+    if(argc != 5)
     {
-        printf("Usage: [fmidx] [BWT FILE] [NUM] [SAMPLE SIZE]\n");
+        printf("Usage: [fmidx] [BWT FILE] [NUM] [SAMPLE SIZE] [OPT]\n");
         return 0;
     }
     else
@@ -16,6 +16,12 @@ int main(int argc, char* argv[])
         char *ptr;
         size_t num = (size_t) strtol(argv[2], &ptr, 10);
         size_t spsize = (size_t) strtol(argv[3], &ptr, 10);
+        if(argv[4][0] == 't')
+        {
+            num = GENOME_SIZE;
+            spsize = SAMPLE_SIZE;
+            printf("num: %u, sample_size: %u\n", (unsigned int)num, (unsigned int)spsize);
+        }
         unsigned int* sml = (unsigned int*)
                             malloc((ALPHA_SIZE+1)*sizeof(unsigned int));
         unsigned int* occ = (unsigned int*)

@@ -8,32 +8,12 @@ int main(int argc, char* argv[])
 {
     if(argc == 1)
     {
-        char input[] = "$gacgcgatc";
+        char *input = "acaacg$";
         unsigned int len = strlen(input);
         char* input_3bit = (char*) malloc(len*sizeof(int));
         for(unsigned int i = 0; i < len; i++)
             write_bp_3bit(input_3bit, i, input[i]);
         unsigned int* sa = ss_mm_3bit(input_3bit, len);
-        int* sa8 = ss_naive_8bit(input, len);
-        for(unsigned int i = 0; i < len; i++)
-            printf("%d, ", sa8[i]);
-        printf("\n");
-        return 0;
-        for(unsigned int i = 0; i < len; i++)
-        {
-            if((int)sa[i] != sa8[i])
-            {
-                printf("sa8: ");
-                for(unsigned int j = 0; j < len; j++)
-                    printf("%d ", sa8[j]);
-                printf("\n");
-                printf("sa: ");
-                for(unsigned int j = 0; j < len; j++)
-                    printf("%d ", sa[j]);
-                printf("\n");
-                return 0;
-            }
-        }
         char* bwt = compute_bwt_3bit(input_3bit, sa, len, len);
         for(unsigned int i = 0; i < len; i++)
         {
@@ -48,7 +28,7 @@ int main(int argc, char* argv[])
     else if(argc == 3)
     {
         // initialize parameter
-        unsigned int genome_size = 30000;
+        unsigned int genome_size = 3000000;
         unsigned int sample_size = 10;
         if(argv[2][0] == 't' || argv[2][0] == 'T')
         {

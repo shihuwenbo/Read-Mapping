@@ -24,19 +24,19 @@ int main(int argc, char* argv[])
         fn3bit[fnlen+5] = '\0';
 
         // create 2 bit and 3 bit genome
-        unsigned int len = 30000;
+        unsigned int len = 3000001;
         if(argv[2][0] == 't' || argv[2][0] == 'T')
             len = GENOME_SIZE;
         unsigned int fsz2bit = (2*len-1)/BYTE_SIZE + 1;
-        unsigned int fsz3bit = (3*len-1)/BYTE_SIZE + 2;
+        unsigned int fsz3bit = (3*len-1)/BYTE_SIZE + 1;
         char* genome_2bit = (char*) malloc(fsz2bit*sizeof(char));
         char* genome_3bit = (char*) malloc(fsz3bit*sizeof(char));
         memset(genome_2bit, 0, fsz2bit);
         memset(genome_3bit, 0, fsz3bit);
         printf("generating file...\n");
-        for(unsigned int i = 0; i < len; i++)
+        for(unsigned int i = 0; i < len - 1; i++)
         {
-            int rnd = randnum(0, 3);
+            unsigned int rnd = randnum(0, 3);
             char bp = '*';
             switch(rnd)
             {
@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
             write_bp_2bit(genome_2bit, i, bp);
             write_bp_3bit(genome_3bit, i, bp);
         }
-        write_bp_3bit(genome_3bit, len, '$');
+        write_bp_3bit(genome_3bit, len-1, '$');
 
         // verify result
         printf("verifying result...\n");
@@ -85,5 +85,123 @@ int main(int argc, char* argv[])
             if(bp == '*')
                 printf("error!!!\n");
         }
-    }
+        unsigned long long int read_sz = READ_SIZE;
+        unsigned long long int read_num = READ_NUM;
+        size_t srfsz = read_sz*read_num*2/8;
+        char* sr2 = (char*) malloc(srfsz);
+        memset(sr2, 0, srfsz);
+        unsigned int k = 0;
+        for(unsigned int i = 0; i < read_num; i++)
+        {
+            int diff = 0;
+            int diffnum = randnum(0,2);
+            unsigned int stpos = randnum(0, len-100-read_sz);
+            unsigned int endpos = stpos + read_sz;
+            for(unsigned int j = stpos; j < endpos; j++)
+            {
+                unsigned int coin = randnum(0, 1);
+                char bp = get_bp_3bit(genome3bit, j);
+                if(coin == 0 || diffnum <= 0)
+                {
+                    write_bp_2bit(sr2, k, bp);
+                }
+                else if(coin == 1 && diffnum > 0)
+                {
+                    if(bp == 'a')
+                    {
+		        unsigned int rndn = randnum(0,2);
+			switch(rndn)
+			{
+			    case 0:
+			    {
+			        write_bp_2bit(sr2, k, 'c');
+				break;
+			    }
+			    case 1:
+			    {
+			        write_bp_2bit(sr2, k, 'g');
+				break;
+			    }
+			    case 2:
+			    {
+			        write_bp_2bit(sr2, k, 't');
+				break;
+			    }
+			 }
+                     }
+                     if(bp == 'c')
+                     {
+                         unsigned int rndn = randnum(0,2);
+                         switch(rndn)
+                         {
+                             case 0:
+                             {
+                                 write_bp_2bit(sr2, k, 'a');
+                                 break;
+                             }
+                             case 1:
+                             {
+                                 write_bp_2bit(sr2, k, 'g');
+                                 break;
+                             }
+                             case 2:
+                             {
+                                 write_bp_2bit(sr2, k, 't');
+                                 break;
+                             }
+                         }
+                     }
+                     if(bp == 'g')
+                     {
+                         unsigned int rndn = randnum(0,2);
+                         switch(rndn)
+                         {
+                             case 0:
+                             {
+                                 write_bp_2bit(sr2, k, 'a');
+                                 break;
+                             }
+                             case 1:
+                             {
+                                 write_bp_2bit(sr2, k, 'c');
+                                 break;
+                             }
+                             case 2:
+                             {
+                                 write_bp_2bit(sr2, k, 't');
+                                 break;
+                             }
+                         }
+                     }
+                     if(bp == 't')
+                     {
+                         unsigned int rndn = randnum(0,2);
+                         switch(rndn)
+                         {
+                             case 0:
+                             {
+                                 write_bp_2bit(sr2, k, 'a');
+                                 break;
+                             }
+                             case 1:
+                             {
+                                 write_bp_2bit(sr2, k, 'c');
+                                 break;
+                             }
+                             case 2:
+                             {
+                                 write_bp_2bit(sr2, k, 'g');
+                                 break;
+                             }
+                         }
+                     }
+                     diffnum--;
+                     diff++;
+                 }// else if
+                 k++;
+                }// inner for
+            } // outer for
+        printf("generated\n");
+        write_file("short_read_2bit", sr2, srfsz);
+    } // else if
 }

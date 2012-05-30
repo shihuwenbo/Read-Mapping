@@ -2,7 +2,9 @@
 #include <stdlib.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <math.h>
 #include <string.h>
+#include <math.h>
 
 // start timer
 void start_timer(double* time)

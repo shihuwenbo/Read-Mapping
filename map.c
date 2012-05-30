@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
         unsigned int* psa = (unsigned int*) psac;
 
         unsigned int read_size = READ_SIZE;
-        unsigned int genome_size = 30001, sample_size = 10, read_num = 100;
+        unsigned int genome_size = 3000001, sample_size = 10, read_num = 100000;
         if(argv[6][0] == 't')
         {
             genome_size = GENOME_SIZE;
@@ -43,14 +43,14 @@ int main(int argc, char* argv[])
         unsigned int* all_ans = (unsigned int*)
                         malloc(ans_size*read_num*sizeof(unsigned int));
         memset(all_ans, -1, ans_size*read_num*sizeof(unsigned int));
-        int kerr = K_ERR;
+        int kerr = KERR;
 
         start_timer(&sctime);
         search(bwt,genome_size,sr,psa,read_num,read_size,sml,occ,sample_size,
             all_ans,ans_size,kerr);
         stop_timer(&sctime);
         
-        for(unsigned int i = 0; i < read_num; i++)
+        for(unsigned int i = 0; i < 100; i++)
         {
             printf("read #%u: ", i);
             unsigned int* ptr = &all_ans[i*ans_size];
@@ -69,8 +69,8 @@ int main(int argc, char* argv[])
             printf("\n");
         }
 
-        printf("Load time: %f sec\n", ldtime);
-        printf("Search time: %f sec\n", sctime);
+        fprintf(stderr, "Load time: %f sec\n", ldtime);
+        fprintf(stderr, "Search time: %f sec\n", sctime);
 
         free(bwt);
         free(smlc);

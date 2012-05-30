@@ -1,3 +1,4 @@
+
 #include "misc.h"
 #include "gpusearch.h"
 #include "cuda.h"
@@ -5,19 +6,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define GENOME_SIZE_TEST ((unsigned long long int) 30001)
-#define SAMPLE_SIZE_TEST ((unsigned long long int) 10)
-#define READ_SIZE ((unsigned long long int) 30)
-
 static cudaError_t crc;
-int nblock_size = 4;
+int nblock_size = 512;
 int maxgsx = 65535;
 
 __device__ char *kmbwt, *kmsr;
-__device__ unsigned int *kmocc, *kmpsa, *kmsml;
+__device__ unsigned int *kmocc, *kmpsa;
+__device__ unsigned int *kmsml;
 
 // given a letter, return its rank in the alphabet
-__device__
+__device__ inline
 unsigned int alpha_rank(char l)
 {
     // rank alphabetically $<a<c<g<t
@@ -33,7 +31,7 @@ unsigned int alpha_rank(char l)
 }
 
 // get the bp at pos
-__device__
+__device__ inline
 char gpu_get_bp_2bit(char* genome, unsigned int pos)
 {
     unsigned long long int bit_pos = pos * ENCODE_SIZE_2BIT;
@@ -53,7 +51,7 @@ char gpu_get_bp_2bit(char* genome, unsigned int pos)
 }
 
 // write a bp at a position
-__device__
+__device__ inline
 void gpu_write_bp_2bit(char* genome, unsigned int pos, char val)
 {
     unsigned long long int bit_pos = pos * ENCODE_SIZE_2BIT;
@@ -90,7 +88,7 @@ void gpu_write_bp_2bit(char* genome, unsigned int pos, char val)
 }
 
 // given a bwt and a partial occ array, find the actual occ value
-__device__
+__device__ inline
 unsigned int gpu_get_occ(long long int pos, char alpha)
 {
     if(pos < 0)
@@ -109,7 +107,7 @@ unsigned int gpu_get_occ(long long int pos, char alpha)
 
     unsigned int ext_cnt = 0;
     for(unsigned int i = occ_off * SAMPLE_SIZE_TEST + 1;
-        i < pos && i < GENOME_SIZE_TEST; i++)
+        i < pos && i < (unsigned int)GENOME_SIZE_TEST; i++)
     {
         char bp = '*';
         if(i < BWT_DPOS)
@@ -142,16 +140,15 @@ unsigned int gpu_get_occ(long long int pos, char alpha)
 }
 
 // get suffix array value
-__device__
+__device__ inline
 unsigned int gpu_get_sa_val(unsigned int pos)
 {
     unsigned int nmov = 0;
-    int lucky = 0;
     while(pos != BWT_DPOS)
     {
         if(pos % SAMPLE_SIZE_TEST == 0)
         {
-            lucky = 1;
+            nmov += kmpsa[pos/SAMPLE_SIZE_TEST];
             break;
         }
         char bp = '*';
@@ -165,15 +162,13 @@ unsigned int gpu_get_sa_val(unsigned int pos)
             gpu_get_occ((long long int)pos,bp);
         nmov++;
     }
-    if(lucky)
-        nmov += kmpsa[pos/SAMPLE_SIZE_TEST];
     return nmov;
 }
 
 // k-mismatch search
-__device__
-void gpu_kmismatch(int kerr,unsigned int re, unsigned int sp, unsigned int ep,
-                   unsigned int* ans)
+__device__ inline
+void gpu_kmismatch(int kerr,unsigned int re,
+              unsigned int sp,unsigned int ep,unsigned int* ans)
 {
     /*
     for(long long int i = re; i >= (long long int)rs && ep >= sp; i--)
@@ -253,17 +248,19 @@ void search_kernel(char* bwt, char* sr, unsigned int* psa,
         unsigned int read_num, unsigned int read_size, unsigned int* sml,
         unsigned int* occ, unsigned int* all_ans, int kerr)
 {
-    kmbwt = bwt;
-    kmocc = occ;
-    kmpsa = psa;
-    kmsr = sr;
-    kmsml = sml;
     unsigned int i = (blockIdx.y*gridDim.x+blockIdx.x)*blockDim.x+threadIdx.x;
-    if(i < read_num)
+    if(i < 100000)
     {
+        kmbwt = bwt;
+        kmocc = occ;
+        kmpsa = psa;
+        kmsr = sr; 
+        kmsml = sml;
         unsigned int* ans_ptr = all_ans + i;
-        unsigned int re = (i+1)*read_size-1;
-        gpu_kmismatch(kerr,re,0,GENOME_SIZE_TEST-1,ans_ptr);
+        unsigned int re = read_size*(i+1)-1;
+        unsigned int sp = 0;
+        unsigned int ep = (unsigned int)GENOME_SIZE_TEST - 1;
+        gpu_kmismatch(kerr,re,sp,ep,ans_ptr);
     }
 }
 
@@ -274,13 +271,13 @@ extern "C++" void gpu_search(char* bwt, char* sr, unsigned int* psa,
 {
     unsigned int x_size, y_size;
     dim3 dimBlock(nblock_size);
-    x_size = (read_num - 1)/nblock_size + 1; 
+    x_size = (100000 - 1)/nblock_size + 1; 
     y_size = (x_size - 1)/maxgsx + 1;  
     x_size = x_size < maxgsx ? x_size : maxgsx;
     dim3 dimGrid(x_size, y_size);
     crc = cudaGetLastError();
-    search_kernel<<<dimGrid, dimBlock>>>(bwt,sr,psa,read_num,read_size,
-         sml,occ,all_ans,kerr);
+    search_kernel<<<dimGrid, dimBlock>>>
+      (bwt,sr,psa,read_num,read_size,sml,occ,all_ans,kerr);
     cudaThreadSynchronize();
     crc = cudaGetLastError();
     if (crc)

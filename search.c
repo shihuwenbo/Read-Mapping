@@ -11,7 +11,7 @@ void search(char* bwt, unsigned int genome_size, char* sr, unsigned int* psa,
         unsigned int ans_size, int kerr)
 {
     const char alphabet[] = "acgt";
-    for(unsigned int i = 0; i < read_num; i++)
+    for(unsigned int i = 0; i < 1000000; i++)
     {
         unsigned int* ans_ptr = all_ans + i * ans_size;
         unsigned int rs = i*read_size;
@@ -31,7 +31,7 @@ unsigned int get_occ(char* bwt, unsigned int* occ, unsigned int genome_size,
     unsigned int occ_off = pos / sample_size;
     unsigned int* base_ptr = &occ[occ_off*ALPHA_SIZE];
 
-    unsigned int occi = 0;
+    long long int occi = 0;
     switch(alpha)
     {
         case 'a': occi = base_ptr[0]; break;
@@ -71,7 +71,7 @@ unsigned int get_occ(char* bwt, unsigned int* occ, unsigned int genome_size,
         if(occi < 0)
             occi = 0;
     }
-    return occi;
+    return (unsigned int)occi;
 }
 
 // k-mismatch search

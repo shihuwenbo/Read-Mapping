@@ -3,7 +3,7 @@ CC = gcc
 NVCC = nvcc
 NVOPTS = -arch sm_20 -O3
 CULIBS = -L/u/local/cuda/current/lib64 -lcuda -lcudart
-CCFLAG = -Wall -Werror -O3 -std=c99
+CCFLAG = -Wall -Werror -O3 -std=c99 -lm
 CXXFLAG = -Wall -Werror -O3
 SUFSORT_OBJ = sufsort.o misc.o suffix_sort.o
 GENTEST_OBJ = misc.o gentest.o
@@ -75,7 +75,15 @@ tarball:
 	rm -rf read_mapping/
 
 grun:
-	./gpumap test/genome_3bit_bwt_2bit test/short_read_2bit test/genome_3bit_bwt_sml test/genome_3bit_bwt_occ test/genome_3bit_psa f
+	./gpumap test/genome_3bit_bwt_2bit \
+				test/short_read_2bit \
+				test/genome_3bit_bwt_sml \
+				test/genome_3bit_bwt_occ \
+				test/genome_3bit_psa t
 
 crun:
-	./map test/genome_3bit_bwt_2bit test/short_read_2bit test/genome_3bit_bwt_sml test/genome_3bit_bwt_occ test/genome_3bit_psa f
+	./map test/genome_3bit_bwt_2bit \
+			test/short_read_2bit \
+			test/genome_3bit_bwt_sml \
+			test/genome_3bit_bwt_occ \
+			test/genome_3bit_psa t

@@ -4,15 +4,20 @@
 
 int main(int argc, char* argv[])
 {
-    if(argc != 4)
+    if(argc != 5)
     {
-        printf("Usage: [convert] [FILE NAME] [NUM] [OPTION]\n");
+        printf("Usage: [convert] [FILE NAME] [NUM] [OPTION] [OPT]\n");
         return 0;
     }
     else
     {
         char* ptr;
         size_t num = (size_t) strtol(argv[2], &ptr, 10);
+        if(argv[4][0] == 't')
+        {
+            num = GENOME_SIZE;
+            printf("num: %u\n", (unsigned int) num);
+        }
         if(strcmp(argv[3], "rev3") == 0)
         {
             char *src, *dst;
