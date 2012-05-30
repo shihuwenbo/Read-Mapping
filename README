@@ -1,3 +1,12 @@
+May 30, 2012
+Freeze the code.
+Not going to change it any more.
+Will upload test case later.
+When you have the test case, place it in a foler named "test".
+First type "make".
+Then type "make crun" to do the mapping using CPU.
+Then type "make grun" to do the mapping using GPU.
+
 May 26, 2012
 Parallelized exact string searching
 
